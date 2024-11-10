@@ -2,12 +2,12 @@
 
 'use client';
 import { useState } from "react";
-import { Calendar, MapPin, PlusCircle, Clipboard } from "lucide-react";
+import { Calendar, MapPin, Clock, Upload, Link } from "lucide-react";
 
-type PlanType = "type1" | "type2" | "type3";
+type PlanType = "scheduled" | "live" | "upload";
 
 export function Create() {
-  const [planType, setPlanType] = useState<PlanType>("type1");
+  const [planType, setPlanType] = useState<PlanType>("scheduled");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -15,19 +15,22 @@ export function Create() {
   const [duration, setDuration] = useState("");
   const [attendees, setAttendees] = useState<number | null>(null);
   const [media, setMedia] = useState<File | null>(null);
+  const [eventURL, setEventURL] = useState("");
 
   const handlePlanTypeChange = (type: PlanType) => {
     setPlanType(type);
-    // Clear irrelevant fields when switching types
-    if (type !== "type1") setTime("");
-    if (type !== "type2") setDuration("");
-    if (type !== "type3") setMedia(null);
+    if (type !== "scheduled") setTime("");
+    if (type !== "live") setDuration("");
+    if (type !== "upload") {
+      setMedia(null);
+      setEventURL("");
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission logic here
-    console.log({ planType, title, description, location, time, duration, attendees, media });
+    console.log({ planType, title, description, location, time, duration, attendees, media, eventURL });
   };
 
   return (
@@ -41,98 +44,122 @@ export function Create() {
         {/* Plan Type Selector */}
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => handlePlanTypeChange("type1")}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1
-              ${planType === "type1" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
+            onClick={() => handlePlanTypeChange("scheduled")}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1 flex items-center gap-2 justify-center
+              ${planType === "scheduled" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
           >
-            Type 1
+            <Calendar className="w-5 h-5" />
+            Scheduled Plan
           </button>
           <button
-            onClick={() => handlePlanTypeChange("type2")}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1
-              ${planType === "type2" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
+            onClick={() => handlePlanTypeChange("live")}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1 flex items-center gap-2 justify-center
+              ${planType === "live" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
           >
-            Type 2
+            <Clock className="w-5 h-5" />
+            Live Happening
           </button>
           <button
-            onClick={() => handlePlanTypeChange("type3")}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1
-              ${planType === "type3" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
+            onClick={() => handlePlanTypeChange("upload")}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium flex-1 flex items-center gap-2 justify-center
+              ${planType === "upload" ? "bg-black dark:bg-white text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"}`}
           >
-            Type 3
+            <Upload className="w-5 h-5" />
+            Upload Event
           </button>
         </div>
 
         {/* Form Fields */}
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Title"
-            className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <textarea
-            placeholder="Description (optional)"
-            className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Location"
-              className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-
-          {planType === "type1" && (
+          {/* Common Fields for Scheduled Plan and Live Happening */}
+          {(planType === "scheduled" || planType === "live") && (
             <>
+              <input
+                type="text"
+                placeholder="Title"
+                className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+
+              <textarea
+                placeholder="Description (optional)"
+                className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                <MapPin className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                 <input
-                  type="datetime-local"
+                  type="text"
+                  placeholder="Location"
                   className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
-              <input
-                type="number"
-                placeholder="Number of Attendees"
-                className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-                value={attendees ?? ""}
-                onChange={(e) => setAttendees(Number(e.target.value))}
-              />
+
+              {planType === "scheduled" && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                    <input
+                      type="datetime-local"
+                      className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                    />
+                  </div>
+                  <input
+                    type="number"
+                    placeholder="Number of Attendees"
+                    className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                    value={attendees ?? ""}
+                    onChange={(e) => setAttendees(Number(e.target.value))}
+                  />
+                </>
+              )}
+
+              {planType === "live" && (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                  <input
+                    type="text"
+                    placeholder="Duration (e.g., 2 hours)"
+                    className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                  />
+                </div>
+              )}
             </>
           )}
 
-          {planType === "type2" && (
-            <div className="flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
-              <input
-                type="text"
-                placeholder="Duration (e.g., 2 hours)"
-                className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              />
-            </div>
-          )}
+          {/* Upload Event Fields */}
+          {planType === "upload" && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-black dark:text-white">Upload Event</h3>
+              
+              <div className="flex items-center gap-2">
+                <Link className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                <input
+                  type="url"
+                  placeholder="Event URL (optional)"
+                  className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                  value={eventURL}
+                  onChange={(e) => setEventURL(e.target.value)}
+                />
+              </div>
 
-          {planType === "type3" && (
-            <div className="flex items-center gap-2">
-              <Clipboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
-              <input
-                type="file"
-                className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-                onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
-              />
+              <div className="flex items-center gap-2">
+                <Upload className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                <input
+                  type="file"
+                  className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
+                  onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
+                />
+              </div>
             </div>
           )}
 
