@@ -5,13 +5,16 @@ import { FeedCard } from "@/components/shared/feed-card";
 import { feedItems } from "@/lib/mock-data";
 
 type TimeFilter = "all" | "now" | "later";
+type ConnectionType = "friends" | "mutuals" | "community";
 
 export function Feed() {
-  const [activeTab, setActiveTab] = useState<"friends" | "mutuals" | "community">("friends");
+  const [activeTab, setActiveTab] = useState<ConnectionType>("friends");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
+
+  const tabs: ConnectionType[] = ["friends", "mutuals", "community"];
 
   const toggleInterest = (itemId: number) => {
     setInterestedItems((prev) => {
@@ -94,10 +97,10 @@ export function Feed() {
           <div className="flex flex-col gap-3">
             {/* Connection Tabs */}
             <div className="flex gap-2">
-              {["friends", "mutuals", "community"].map((tab) => (
+              {tabs.map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab as any)}
+                  onClick={() => setActiveTab(tab)}
                   className={`
                     px-4 py-1.5 rounded-full text-sm font-medium flex-1
                     transition-colors duration-200
