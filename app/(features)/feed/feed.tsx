@@ -4,6 +4,8 @@ import { Search, Menu } from "lucide-react";
 import { FeedCard } from "@/components/shared/feed-card";
 import { feedItems } from "@/lib/mock-data";
 import { ThemeMenu } from '@/components/shared/theme-menu';
+import { useAppContext } from "@/components/shared/AppContext";
+
 
 type TimeFilter = "all" | "now" | "later";
 type ConnectionType = "friends" | "mutuals" | "community";
@@ -14,21 +16,19 @@ export function Feed() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
+
+  const { interestedItems, addInterestedItem, removeInterestedItem } = useAppContext(); // Use context for interested items
 
   const tabs: ConnectionType[] = ["friends", "mutuals", "community"];
 
   const toggleInterest = (itemId: number) => {
-    setInterestedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
+    if (interestedItems.some((item) => item.id === itemId)) {
+      removeInterestedItem(itemId);
+    } else {
+      const item = feedItems.find((feedItem) => feedItem.id === itemId);
+      if (item) addInterestedItem(item);
+    }
   };
 
   const toggleRepost = (itemId: number) => {
@@ -172,9 +172,9 @@ export function Feed() {
             <FeedCard
               key={item.id}
               item={item}
-              onInterestToggle={toggleInterest}
-              onRepostToggle={toggleRepost}
-              isInterested={interestedItems.has(item.id)}
+              onInterestToggle={() => toggleInterest(item.id)}
+              onRepostToggle={() => toggleRepost(item.id)}
+              isInterested={interestedItems.some((interestedItem) => interestedItem.id === item.id)}
               isReposted={repostedItems.has(item.id)}
             />
           ))}
