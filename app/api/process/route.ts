@@ -55,7 +55,8 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const [result] = await visionClient.textDetection(buffer);
       const detections = result.textAnnotations;
-      extractedText = detections ? detections[0].description : '';
+      extractedText = detections && detections[0].description ? detections[0].description : '';
+
     }
 
     if (!extractedText) {
