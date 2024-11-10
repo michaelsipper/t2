@@ -1,20 +1,24 @@
-'use client';
-import { useState } from 'react';
-import { Search } from 'lucide-react';
-import { FeedCard } from '@/components/shared/feed-card';
-import { feedItems } from '@/lib/mock-data';
+"use client";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { FeedCard } from "@/components/shared/feed-card";
+import { feedItems } from "@/lib/mock-data";
 
-type TimeFilter = 'all' | 'now' | 'later';
+type TimeFilter = "all" | "now" | "later";
 
 export function Feed() {
-  const [activeTab, setActiveTab] = useState<'friends' | 'mutuals' | 'community'>('friends');
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
+  const [activeTab, setActiveTab] = useState<
+    "friends" | "mutuals" | "community"
+  >("friends");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [interestedItems, setInterestedItems] = useState<Set<number>>(
+    new Set()
+  );
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
 
   const toggleInterest = (itemId: number) => {
-    setInterestedItems(prev => {
+    setInterestedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -26,7 +30,7 @@ export function Feed() {
   };
 
   const toggleRepost = (itemId: number) => {
-    setRepostedItems(prev => {
+    setRepostedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -42,35 +46,36 @@ export function Feed() {
 
     // Filter by connection type
     switch (activeTab) {
-      case 'friends':
-        filtered = filtered.filter(item => item.poster.connection === "1st");
+      case "friends":
+        filtered = filtered.filter((item) => item.poster.connection === "1st");
         break;
-      case 'mutuals':
-        filtered = filtered.filter(item => item.poster.connection === "2nd");
+      case "mutuals":
+        filtered = filtered.filter((item) => item.poster.connection === "2nd");
         break;
-      case 'community':
-        filtered = filtered.filter(item => item.poster.connection === "3rd");
+      case "community":
+        filtered = filtered.filter((item) => item.poster.connection === "3rd");
         break;
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.event.title.toLowerCase().includes(query) ||
-        item.event.description.toLowerCase().includes(query) ||
-        item.event.location.toLowerCase().includes(query) ||
-        item.poster.name.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (item) =>
+          item.event.title.toLowerCase().includes(query) ||
+          item.event.description.toLowerCase().includes(query) ||
+          item.event.location.toLowerCase().includes(query) ||
+          item.poster.name.toLowerCase().includes(query)
       );
     }
 
     // Filter by time mode
     switch (timeFilter) {
-      case 'now':
-        filtered = filtered.filter(item => item.type === 'realtime');
+      case "now":
+        filtered = filtered.filter((item) => item.type === "realtime");
         break;
-      case 'later':
-        filtered = filtered.filter(item => item.type === 'scheduled');
+      case "later":
+        filtered = filtered.filter((item) => item.type === "scheduled");
         break;
       // 'all' requires no filtering
     }
@@ -80,10 +85,10 @@ export function Feed() {
 
   return (
     <div className="mb-16">
-      <header className="sticky top-0 bg-white border-b z-10 px-4 py-3">
-        <h1 className="text-2xl font-bold text-blue-500 mb-4">Tap'dIn</h1>
+      <header className="sticky top-0 bg-white border-b z-10 px-2 py-2">
+        <h1 className="text-2xl font-bold text-blue-500 mb-3">Tap'dIn</h1>
 
-        <div className="relative mb-4">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
           <input
             type="text"
@@ -94,69 +99,69 @@ export function Feed() {
           />
         </div>
 
-        <div className="flex justify-between items-center">
-          <div className="flex gap-1 flex-1">
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1">
             <button
-              className={`px-3 py-2 rounded-lg text-sm flex-1 ${
-                activeTab === 'friends'
-                  ? 'bg-blue-500 text-white'
-                  : 'border border-gray-300'
+              className={`px-2 py-1.5 rounded-lg text-sm flex-1 ${
+                activeTab === "friends"
+                  ? "bg-blue-500 text-white"
+                  : "border border-gray-300"
               }`}
-              onClick={() => setActiveTab('friends')}
+              onClick={() => setActiveTab("friends")}
             >
               Friends
             </button>
             <button
-              className={`px-3 py-2 rounded-lg text-sm flex-1 ${
-                activeTab === 'mutuals'
-                  ? 'bg-blue-500 text-white'
-                  : 'border border-gray-300'
+              className={`px-2 py-1.5 rounded-lg text-sm flex-1 ${
+                activeTab === "mutuals"
+                  ? "bg-blue-500 text-white"
+                  : "border border-gray-300"
               }`}
-              onClick={() => setActiveTab('mutuals')}
+              onClick={() => setActiveTab("mutuals")}
             >
               Mutuals
             </button>
             <button
-              className={`px-3 py-2 rounded-lg text-sm flex-1 ${
-                activeTab === 'community'
-                  ? 'bg-blue-500 text-white'
-                  : 'border border-gray-300'
+              className={`px-2 py-1.5 rounded-lg text-sm flex-1 ${
+                activeTab === "community"
+                  ? "bg-blue-500 text-white"
+                  : "border border-gray-300"
               }`}
-              onClick={() => setActiveTab('community')}
+              onClick={() => setActiveTab("community")}
             >
               Community
             </button>
           </div>
 
-          <div className="ml-3 shrink-0">
-            <div className="flex rounded-lg border border-gray-300 p-1">
+          <div className="flex justify-end">
+            <div className="flex rounded-lg border border-gray-300 p-0.5">
               <button
                 className={`px-3 py-1 rounded text-sm ${
-                  timeFilter === 'all'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  timeFilter === "all"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
-                onClick={() => setTimeFilter('all')}
+                onClick={() => setTimeFilter("all")}
               >
                 All
               </button>
               <button
                 className={`px-3 py-1 rounded text-sm ${
-                  timeFilter === 'now'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  timeFilter === "now"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
-                onClick={() => setTimeFilter('now')}
+                onClick={() => setTimeFilter("now")}
               >
                 Now
               </button>
               <button
                 className={`px-3 py-1 rounded text-sm ${
-                  timeFilter === 'later'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  timeFilter === "later"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
-                onClick={() => setTimeFilter('later')}
+                onClick={() => setTimeFilter("later")}
               >
                 Later
               </button>
