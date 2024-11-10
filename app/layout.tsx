@@ -23,9 +23,26 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <base target="_self" /> {/* Ensures links open in the same app context */}
+        
+        {/* JavaScript to intercept navigation and keep it in-app for iOS */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if (window.navigator.standalone) {
+              document.addEventListener('click', function(event) {
+                let target = event.target as HTMLElement;
+                while (target && target.nodeName !== 'A') target = target.parentNode as HTMLElement;
+                if (target && target.nodeName === 'A' && target.getAttribute('href')) {
+                  event.preventDefault();
+                  window.location.href = target.getAttribute('href');
+                }
+              });
+            }
+          `,
+        }} />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} flex flex-col`} style={{ height: '100vh', minHeight: '-webkit-fill-available' }}>
         <AppProvider>
           <ThemeProvider
             attribute="class"
