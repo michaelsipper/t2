@@ -16,7 +16,7 @@ interface ParticipantsDisplayProps {
 }
 
 export function ParticipantsDisplay({
-  totalSpots: _totalSpots, // This is the fix - we're renaming it in the destructuring
+  totalSpots: _totalSpots,
   participants,
   remainingSpots,
   showNames = true,
@@ -27,10 +27,10 @@ export function ParticipantsDisplay({
   }
 
   return (
-    <div className="mb-4">
+    <div>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-sm">Participants</h4>
-        <span className="text-sm text-gray-500">
+        <h4 className="font-medium text-sm text-zinc-300">Participants</h4>
+        <span className="text-sm text-zinc-400">
           {remainingSpots} spot{remainingSpots !== 1 ? 's' : ''} left
         </span>
       </div>
@@ -49,12 +49,12 @@ export function ParticipantsDisplay({
                     src={participant.avatar}
                     alt={participant.name}
                     fill
-                    className="rounded-full border-2 border-white bg-gray-200 object-cover"
+                    className="rounded-xl border-2 border-zinc-950 object-cover"
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center">
-                  <span className="text-xs font-medium text-gray-600">
+                <div className="w-8 h-8 rounded-xl border-2 border-zinc-950 bg-gradient-to-br from-indigo-400 to-sky-400 flex items-center justify-center">
+                  <span className="text-xs font-medium text-white">
                     {participant.name.charAt(0)}
                   </span>
                 </div>
@@ -65,18 +65,18 @@ export function ParticipantsDisplay({
           {Array.from({ length: Math.min(remainingSpots, 3) }).map((_, index) => (
             <div
               key={`empty-${index}`}
-              className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center"
+              className="w-8 h-8 rounded-xl border-2 border-zinc-950 bg-zinc-800 flex items-center justify-center"
             >
-              <span className="text-gray-400 text-xs">+</span>
+              <span className="text-zinc-400 text-xs">+</span>
             </div>
           ))}
         </div>
 
         {showNames && participants.length > 0 && (
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-zinc-300">
             <span className="font-medium">{participants[0].name}</span>
             {participants.length > 1 && (
-              <span> and {participants.length - 1} other{participants.length > 2 ? 's' : ''}</span>
+              <span className="text-zinc-400"> and {participants.length - 1} other{participants.length > 2 ? 's' : ''}</span>
             )}
           </div>
         )}
