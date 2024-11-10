@@ -31,3 +31,47 @@ export interface FeedItem {
   event: Event;
   repostMessage?: string;
 }
+
+export interface EventLocation {
+  name: string;
+  address?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface EventData {
+  title: string;
+  datetime: string;
+  location: EventLocation;
+  description?: string;
+  capacity?: number;
+  type?: "social" | "business" | "entertainment";
+}
+
+export interface EditableEventData extends EventData {
+  isEditing?: boolean;
+}
+
+export interface EventLocation {
+  name: string;
+  address?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface EventData {
+  title: string;
+  datetime: string;
+  location: EventLocation;
+  description?: string;
+  capacity?: number;
+  type?: "social" | "business" | "entertainment";
+}
+
+export interface EditableEventData extends EventData {
+  isEditing?: boolean;
+}

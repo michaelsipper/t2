@@ -1,12 +1,13 @@
-// create.tsx
-
 'use client';
 import { useState } from "react";
-import { Calendar, MapPin, Clock, Upload, Link } from "lucide-react";
+import { Calendar, MapPin, Clock, Upload, Link, Loader2, X } from "lucide-react";
+import { Alert } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast";
 
 type PlanType = "scheduled" | "live" | "upload";
 
 export function Create() {
+  const { showToast } = useToast(); // Update to use showToast
   const [planType, setPlanType] = useState<PlanType>("scheduled");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -16,6 +17,9 @@ export function Create() {
   const [attendees, setAttendees] = useState<number | null>(null);
   const [media, setMedia] = useState<File | null>(null);
   const [eventURL, setEventURL] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePlanTypeChange = (type: PlanType) => {
     setPlanType(type);
@@ -24,13 +28,80 @@ export function Create() {
     if (type !== "upload") {
       setMedia(null);
       setEventURL("");
+      setPreview(null);
     }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
     console.log({ planType, title, description, location, time, duration, attendees, media, eventURL });
+  };
+
+  // Handler for image uploads
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      setError("");
+
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/process", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to process image");
+
+      showToast("Image processed successfully!"); // Updated toast usage
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to process image");
+      showToast("Failed to process image"); // Updated toast usage
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handler for URL submissions
+  const handleUrlSubmit = async () => {
+    if (!eventURL) {
+      setError("Please enter a URL");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("url", eventURL);
+
+      const response = await fetch("/api/process", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to process URL");
+
+      showToast("URL processed successfully!"); // Updated toast usage
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to process URL");
+      showToast("Failed to process URL"); // Updated toast usage
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -71,7 +142,6 @@ export function Create() {
 
         {/* Form Fields */}
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          {/* Common Fields for Scheduled Plan and Live Happening */}
           {(planType === "scheduled" || planType === "live") && (
             <>
               <input
@@ -81,14 +151,12 @@ export function Create() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-
               <textarea
                 placeholder="Description (optional)"
                 className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
-
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                 <input
@@ -99,7 +167,6 @@ export function Create() {
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
-
               {planType === "scheduled" && (
                 <>
                   <div className="flex items-center gap-2">
@@ -120,7 +187,6 @@ export function Create() {
                   />
                 </>
               )}
-
               {planType === "live" && (
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
@@ -150,16 +216,45 @@ export function Create() {
                   value={eventURL}
                   onChange={(e) => setEventURL(e.target.value)}
                 />
+                <button
+                  type="button"
+                  onClick={handleUrlSubmit}
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg"
+                >
+                  Process URL
+                </button>
               </div>
-
               <div className="flex items-center gap-2">
                 <Upload className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                 <input
                   type="file"
                   className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-white focus:outline-none"
-                  onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
+                  onChange={handleImageUpload}
                 />
               </div>
+
+              {preview && (
+                <div className="relative">
+                  <img src={preview} alt="Preview" className="w-full h-48 object-contain rounded-lg" />
+                  <button
+                    onClick={() => setPreview(null)}
+                    className="absolute top-2 right-2 p-1 bg-white dark:bg-zinc-900 rounded-full shadow"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              
+              {error && (
+                <Alert message={error} />
+              )}
+
+              {isProcessing && (
+                <div className="flex items-center justify-center mt-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">Processing...</span>
+                </div>
+              )}
             </div>
           )}
 
