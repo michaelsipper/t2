@@ -18,53 +18,7 @@ export default function CreatePage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Search and Filters */}
-      <div className="mb-6 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-          <input
-            type="text"
-            placeholder="Search a person, place, etc."
-            className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border focus:outline-none focus:border-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setFilterType('people')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filterType === 'people'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              People
-            </button>
-            <button
-              onClick={() => setFilterType('businesses')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filterType === 'businesses'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              Businesses
-            </button>
-          </div>
-
-          <button
-            onClick={() => setTimeFilter(timeFilter === 'now' ? 'later' : 'now')}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-          >
-            <span>{timeFilter === 'now' ? 'Now' : 'Later'}</span>
-            <ToggleRight className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
+        
       {/* Create Options */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/create/type1" className="block">
