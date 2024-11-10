@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Footprints, Map, PlusCircle, Bell, User } from 'lucide-react';
+import { Home, Footprints, PlusCircle, Bell, User } from 'lucide-react'; // Removed Map import
 
 const navItems = [
   { icon: Home, label: 'Feed', href: '/feed' },
