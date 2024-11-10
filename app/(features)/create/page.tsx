@@ -3,33 +3,56 @@
 
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, Users, Upload, Link as LinkIcon } from 'lucide-react';
-import { EventData, EventLocation } from '@/lib/types';
+import type { Event, FeedItem } from '@/lib/types';
 
 type PlanType = 'scheduled' | 'realtime' | 'external';
 
 interface CreateFormData {
   title: string;
   description: string;
-  location: EventLocation;
+  location: string;
   totalSpots: number;
-  datetime?: string;
+  time?: string;
+  startTime?: number;
   duration?: number;
   externalUrl?: string;
+  openInvite: boolean;
 }
+
+const initialFormData: CreateFormData = {
+  title: '',
+  description: '',
+  location: '',
+  totalSpots: 1,
+  openInvite: false
+};
 
 export default function CreatePage() {
   const [planType, setPlanType] = useState<PlanType>('scheduled');
-  const [formData, setFormData] = useState<CreateFormData>({
-    title: '',
-    description: '',
-    location: { name: '' },
-    totalSpots: 1,
-  });
+  const [formData, setFormData] = useState<CreateFormData>(initialFormData);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission
-    console.log('Submitting:', { type: planType, ...formData });
+    
+    const newEvent: Partial<FeedItem> = {
+      type: planType === 'external' ? 'scheduled' : planType,
+      event: {
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        totalSpots: formData.totalSpots,
+        currentInterested: 0,
+        openInvite: formData.openInvite,
+        participants: [],
+        ...(planType === 'scheduled' ? { time: formData.time } : {}),
+        ...(planType === 'realtime' ? { 
+          startTime: Date.now(),
+          duration: formData.duration 
+        } : {})
+      }
+    };
+
+    console.log('Submitting:', newEvent);
   };
 
   const renderPlanTypeSelector = () => (
@@ -41,6 +64,7 @@ export default function CreatePage() {
       ].map(({ id, label, icon: Icon }) => (
         <button
           key={id}
+          type="button"
           onClick={() => setPlanType(id as PlanType)}
           className={`flex-1 flex items-center justify-center p-4 rounded-lg border transition-colors ${
             planType === id 
@@ -91,8 +115,8 @@ export default function CreatePage() {
             </label>
             <input
               type="datetime-local"
-              value={formData.datetime}
-              onChange={(e) => setFormData({ ...formData, datetime: e.target.value })}
+              value={formData.time}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -103,28 +127,39 @@ export default function CreatePage() {
             </label>
             <input
               type="text"
-              value={formData.location.name}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                location: { ...formData.location, name: e.target.value } 
-              })}
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Where's it happening?"
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Number of Spots
-          </label>
-          <input
-            type="number"
-            min="1"
-            value={formData.totalSpots}
-            onChange={(e) => setFormData({ ...formData, totalSpots: parseInt(e.target.value) })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Number of Spots
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={formData.totalSpots}
+              onChange={(e) => setFormData({ ...formData, totalSpots: parseInt(e.target.value) })}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex items-center pt-6">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.openInvite}
+                onChange={(e) => setFormData({ ...formData, openInvite: e.target.checked })}
+                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Open Invite</span>
+            </label>
+          </div>
         </div>
       </div>
     </>
@@ -180,15 +215,24 @@ export default function CreatePage() {
             </label>
             <input
               type="text"
-              value={formData.location.name}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                location: { ...formData.location, name: e.target.value } 
-              })}
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Where are you?"
             />
           </div>
+        </div>
+
+        <div className="flex items-center">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.openInvite}
+              onChange={(e) => setFormData({ ...formData, openInvite: e.target.checked })}
+              className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Open Invite</span>
+          </label>
         </div>
       </div>
     </>
@@ -210,7 +254,7 @@ export default function CreatePage() {
           />
         </div>
         
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
           <Upload className="w-8 h-8 mx-auto mb-2" />
           <p>Or drag and drop event image/flyer here</p>
         </div>
