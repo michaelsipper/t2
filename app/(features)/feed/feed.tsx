@@ -82,6 +82,11 @@ export function Feed() {
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 bg-white/80 backdrop-blur-sm border-b z-10">
         <div className="max-w-2xl mx-auto px-4 py-3">
+          {/* Logo */}
+          <h1 className="text-xl font-bold mb-4">
+            Tap'd<span className="text-blue-500">In</span>
+          </h1>
+
           {/* Search Bar */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
