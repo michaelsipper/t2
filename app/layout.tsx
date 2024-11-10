@@ -22,22 +22,23 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className={inter.className}>
-        <AppProvider> {/* Step 2: Wrap AppProvider */}
+        <AppProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
             enableSystem={true}
             disableTransitionOnChange
           >
-            <div className="min-h-screen flex flex-col">
+            <div className="flex flex-col" style={{ height: '100vh' }}>
               <main className="flex-1 pb-16">{children}</main>
               <FooterNav />
             </div>
           </ThemeProvider>
-        </AppProvider> {/* Close AppProvider */}
+        </AppProvider>
       </body>
     </html>
   );
