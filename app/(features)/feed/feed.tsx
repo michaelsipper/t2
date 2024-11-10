@@ -91,7 +91,7 @@ export function Feed() {
               <button onClick={() => setShowSearch(!showSearch)}>
                 <Search className="w-5 h-5 text-zinc-400 hover:text-zinc-600 dark:hover:text-white transition-colors" />
               </button>
-              <h1 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-sky-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-semibold bg-gradient-to-r from-indigo-400 to-sky-400 bg-clip-text text-transparent">
                 Tap'dIn
               </h1>
               <button onClick={() => setMenuOpen(true)}>
