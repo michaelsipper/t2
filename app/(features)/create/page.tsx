@@ -1,4 +1,3 @@
-// app/(features)/create/page.tsx
 'use client';
 
 import Link from 'next/link';
@@ -17,8 +16,9 @@ export default function CreatePage() {
   const [timeFilter, setTimeFilter] = useState<'now' | 'later'>('now');
 
   return (
+    
     <div className="container mx-auto px-4 py-6">
-        
+        <h1 className="text-2xl font-bold">Create</h1>
       {/* Create Options */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/create/type1" className="block">
