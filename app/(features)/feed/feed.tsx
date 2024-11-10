@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { FeedCard } from "@/components/shared/feed-card";
 import { feedItems } from "@/lib/mock-data";
 
@@ -11,6 +11,7 @@ export function Feed() {
   const [activeTab, setActiveTab] = useState<ConnectionType>("friends");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [interestedItems, setInterestedItems] = useState<Set<number>>(new Set());
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
 
@@ -79,75 +80,91 @@ export function Feed() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 bg-white/80 backdrop-blur-sm border-b z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          {/* Logo */}
-          <h1 className="text-xl font-bold mb-4">
-            Tap'd<span className="text-blue-500">In</span>
-          </h1>
-
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Search plans, people, places..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 rounded-full text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {/* Connection Tabs */}
-            <div className="flex gap-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`
-                    px-4 py-1.5 rounded-full text-sm font-medium flex-1
-                    transition-colors duration-200
-                    ${
-                      activeTab === tab
-                        ? "bg-black text-white"
-                        : "bg-transparent text-gray-600 hover:bg-gray-100"
-                    }
-                  `}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
+    <div className="min-h-screen bg-zinc-950">
+      <header className="sticky top-0 z-10">
+        <div className="relative bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
+          <div className="max-w-lg mx-auto px-4">
+            {/* Top Bar */}
+            <div className="flex items-center justify-between py-4">
+              <button onClick={() => setShowSearch(!showSearch)}>
+                <Search className="w-5 h-5 text-zinc-400 hover:text-white transition-colors" />
+              </button>
+              <h1 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-sky-400 bg-clip-text text-transparent">
+                Tap'dIn
+              </h1>
+              <button>
+                <Menu className="w-5 h-5 text-zinc-400 hover:text-white transition-colors" />
+              </button>
             </div>
 
-            {/* Time Filter */}
-            <div className="flex justify-end">
-              <div className="inline-flex rounded-full bg-gray-100 p-1">
-                {["all", "now", "later"].map((time) => (
+            {/* Search Bar - Slides down when active */}
+            <div className={`
+              overflow-hidden transition-all duration-300 ease-in-out
+              ${showSearch ? "max-h-16 opacity-100 mb-4" : "max-h-0 opacity-0"}
+            `}>
+              <div className="bg-zinc-900 rounded-lg flex items-center px-3">
+                <Search className="w-4 h-4 text-zinc-400" />
+                <input
+                  type="text"
+                  placeholder="Search plans, people, places..."
+                  className="w-full px-3 py-2 bg-transparent text-white text-sm placeholder:text-zinc-500 focus:outline-none"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col gap-3 pb-4">
+              {/* Connection Type Scroll */}
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {tabs.map((tab) => (
                   <button
-                    key={time}
-                    onClick={() => setTimeFilter(time as TimeFilter)}
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
                     className={`
-                      px-4 py-1.5 rounded-full text-sm font-medium 
-                      transition-colors duration-200
+                      px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap
+                      transition-all duration-300
                       ${
-                        timeFilter === time
-                          ? "bg-white text-black shadow-sm"
-                          : "text-gray-600 hover:text-gray-900"
+                        activeTab === tab
+                          ? "bg-white text-black"
+                          : "text-zinc-400 hover:text-white"
                       }
                     `}
                   >
-                    {time.charAt(0).toUpperCase() + time.slice(1)}
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
+              </div>
+
+              {/* Time Filter Pills */}
+              <div className="flex justify-center">
+                <div className="inline-flex bg-zinc-900 rounded-lg p-1 gap-1">
+                  {["all", "now", "later"].map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => setTimeFilter(time as TimeFilter)}
+                      className={`
+                        px-4 py-1.5 rounded-lg text-xs font-medium
+                        transition-all duration-300
+                        ${
+                          timeFilter === time
+                            ? "bg-zinc-800 text-white"
+                            : "text-zinc-400 hover:text-white"
+                        }
+                      `}
+                    >
+                      {time.charAt(0).toUpperCase() + time.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6">
+      <main className="max-w-lg mx-auto px-4 py-6">
         <div className="space-y-6">
           {getFilteredItems().map((item) => (
             <FeedCard
