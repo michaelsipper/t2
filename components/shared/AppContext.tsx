@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { FeedItem } from "@/lib/types";
 import { feedItems as initialFeedItems } from "@/lib/mock-data";
 
-// Define the shape of our context
 interface AppContextType {
   interestedItems: FeedItem[];
   addInterestedItem: (item: FeedItem) => void;
@@ -12,9 +11,9 @@ interface AppContextType {
   feedItems: FeedItem[];
   addFeedItem: (item: Omit<FeedItem, 'id'>) => void;
   deleteFeedItem: (itemId: number) => void;
+  resetToInitialFeed: () => void;  // New function
 }
 
-// Create the context
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -27,11 +26,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return [];
   });
 
-  // Initialize feed items state with localStorage if available, otherwise use initial mock data
+  // Initialize feed items state with localStorage or initial mock data
   const [feedItems, setFeedItems] = useState<FeedItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('feedItems');
-      return saved ? JSON.parse(saved) : initialFeedItems;
+      // Only use saved items if they exist AND array is not empty
+      return saved && JSON.parse(saved).length > 0 ? JSON.parse(saved) : initialFeedItems;
     }
     return initialFeedItems;
   });
@@ -44,10 +44,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [interestedItems, feedItems]);
 
-  // Add an item to interested items
   const addInterestedItem = (item: FeedItem) => {
     setInterestedItems((prev) => {
-      // Check if item already exists to avoid duplicates
       if (prev.some(existingItem => existingItem.id === item.id)) {
         return prev;
       }
@@ -55,35 +53,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Remove an item from interested items
   const removeInterestedItem = (itemId: number) => {
     setInterestedItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
-  // Add a new item to the feed
   const addFeedItem = (item: Omit<FeedItem, 'id'>) => {
     const newItem: FeedItem = {
       ...item,
-      id: Date.now(), // Generate a unique ID
+      id: Date.now(),
     };
     console.log('Adding new item:', newItem);
     setFeedItems((prev) => {
-      const newItems = [newItem, ...prev]; // Add to beginning of feed
+      const newItems = [newItem, ...prev];
       console.log('New feed state:', newItems);
       return newItems;
     });
   };
 
-  // Delete an item from both feed and interested items
   const deleteFeedItem = (itemId: number) => {
-    // Remove from feed items
     setFeedItems((prev) => prev.filter(item => item.id !== itemId));
-    
-    // Also remove from interested items if it exists there
     setInterestedItems((prev) => prev.filter(item => item.id !== itemId));
   };
 
-  // Create the context value object
+  // New function to reset feed to initial mock data
+  const resetToInitialFeed = () => {
+    setFeedItems(initialFeedItems);
+    localStorage.removeItem('feedItems'); // Clear localStorage
+    console.log('Feed reset to initial data');
+  };
+
   const contextValue = {
     interestedItems,
     addInterestedItem,
@@ -91,6 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     feedItems,
     addFeedItem,
     deleteFeedItem,
+    resetToInitialFeed,  // Add to context value
   };
 
   return (
@@ -100,7 +99,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use the AppContext
 export function useAppContext() {
   const context = useContext(AppContext);
   if (!context) {

@@ -1,9 +1,9 @@
-//theme-menu.tsx
-
+// theme-menu.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, X } from 'lucide-react';
+import { Sun, Moon, X, RefreshCw } from 'lucide-react';
+import { useAppContext } from './AppContext';
 
 interface ThemeMenuProps {
   isOpen: boolean;
@@ -13,8 +13,8 @@ interface ThemeMenuProps {
 export function ThemeMenu({ isOpen, onClose }: ThemeMenuProps) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { resetToInitialFeed } = useAppContext();
 
-  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -48,7 +48,7 @@ export function ThemeMenu({ isOpen, onClose }: ThemeMenuProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-          <h2 className="text-lg font-medium text-black dark:text-white">Settings</h2>
+          <h2 className="text-lg font-medium text-black dark:text-white">Developer Tools</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -90,6 +90,23 @@ export function ThemeMenu({ isOpen, onClose }: ThemeMenuProps) {
               >
                 <Moon className="w-5 h-5" />
                 <span className="text-sm font-medium">Dark</span>
+              </button>
+            </div>
+
+            {/* Reset Feed Option */}
+            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                Feed Options
+              </h3>
+              <button
+                onClick={() => {
+                  resetToInitialFeed();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              >
+                <RefreshCw className="w-5 h-5" />
+                <span className="text-sm font-medium">Reset Feed</span>
               </button>
             </div>
           </div>
