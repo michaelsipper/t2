@@ -1,3 +1,5 @@
+//feed-card.tsx
+
 "use client";
 import { Heart, MessageCircle, Send, Repeat } from "lucide-react";
 import { TimeProgressBar } from "./time-progress-bar";

@@ -1,3 +1,5 @@
+//index.ts
+
 export interface Participant {
     id: number;
     name: string;

@@ -1,3 +1,5 @@
+//mock-data.ts
+
 import { FeedItem } from "@/lib/types";
 
 export const feedItems: FeedItem[] = [

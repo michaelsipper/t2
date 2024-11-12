@@ -1,3 +1,5 @@
+//page.tsx
+
 import { Create } from './create';
 
 export default function CreatePage() {

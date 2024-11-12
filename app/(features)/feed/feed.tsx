@@ -1,8 +1,10 @@
+//feed.tsx
+
 'use client';
 import { useState } from "react";
 import { Search, Menu } from "lucide-react";
 import { FeedCard } from "@/components/shared/feed-card";
-import { feedItems } from "@/lib/mock-data";
+
 import { ThemeMenu } from '@/components/shared/theme-menu';
 import { useAppContext } from "@/components/shared/AppContext";
 
@@ -18,7 +20,8 @@ export function Feed() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
 
-  const { interestedItems, addInterestedItem, removeInterestedItem } = useAppContext(); // Use context for interested items
+  const { interestedItems, addInterestedItem, removeInterestedItem, feedItems } = useAppContext();
+  // Use context for interested items
 
   const tabs: ConnectionType[] = ["friends", "mutuals", "community"];
 
@@ -44,7 +47,7 @@ export function Feed() {
   };
 
   const getFilteredItems = () => {
-    let filtered = feedItems;
+    let filtered = [...feedItems]; // This copies the feedItems from context
 
     switch (activeTab) {
       case "friends":
