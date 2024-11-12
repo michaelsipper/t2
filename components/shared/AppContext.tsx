@@ -1,8 +1,6 @@
-// components/shared/AppContext.tsx
-
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { FeedItem } from "@/lib/types";
 import { feedItems as initialFeedItems } from "@/lib/mock-data";
 
@@ -17,8 +15,31 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [interestedItems, setInterestedItems] = useState<FeedItem[]>([]);
-  const [feedItems, setFeedItems] = useState<FeedItem[]>(initialFeedItems);
+  // Load interestedItems from localStorage if it exists, or start with an empty array
+  const [interestedItems, setInterestedItems] = useState<FeedItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('interestedItems');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Load feedItems from localStorage if it exists, or default to initialFeedItems
+  const [feedItems, setFeedItems] = useState<FeedItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('feedItems');
+      return saved ? JSON.parse(saved) : initialFeedItems;
+    }
+    return initialFeedItems;
+  });
+
+  // Save interestedItems and feedItems to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('interestedItems', JSON.stringify(interestedItems));
+      localStorage.setItem('feedItems', JSON.stringify(feedItems));
+    }
+  }, [interestedItems, feedItems]);
 
   const addInterestedItem = (item: FeedItem) => {
     setInterestedItems((prev) => [...prev, item]);
@@ -33,7 +54,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...item,
       id: Date.now(), // Generate a unique ID
     };
-    setFeedItems((prev) => [newItem, ...prev]); // Add to the beginning of the feed
+    console.log('Adding new item:', newItem);
+    setFeedItems((prev) => {
+      const newItems = [newItem, ...prev];
+      console.log('New feed state:', newItems);
+      return newItems;
+    });
   };
 
   return (

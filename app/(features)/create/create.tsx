@@ -371,18 +371,23 @@ export function Create() {
         }
       };
   
+      // Log the new post data
+      console.log('Submitting new post:', newPost);
+  
       // Add to feed using context
       addFeedItem(newPost);
+      console.log('Post submitted'); // Log success message
   
       showToast("Plan posted successfully!");
       router.push('/feed');
     } catch (error) {
-      console.error('Error posting plan:', error);
+      console.error('Error posting plan:', error); // Log error if submission fails
       showToast("Failed to post plan");
     } finally {
       setIsProcessing(false);
     }
   };
+  
   
   
 

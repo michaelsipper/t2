@@ -47,8 +47,14 @@ export function Feed() {
   };
 
   const getFilteredItems = () => {
-    let filtered = [...feedItems]; // This copies the feedItems from context
-
+    console.log('Current feed items:', feedItems); // Log all feed items from context
+  
+    let filtered = [...feedItems]; // Copy the feedItems array from context
+  
+    // Log the currently active tab for filtering
+    console.log('Current active tab:', activeTab);
+  
+    // Filter based on active tab
     switch (activeTab) {
       case "friends":
         filtered = filtered.filter((item) => item.poster.connection === "1st");
@@ -60,7 +66,11 @@ export function Feed() {
         filtered = filtered.filter((item) => item.poster.connection === "3rd");
         break;
     }
-
+  
+    // Log the filtered items after connection type filter
+    console.log('Filtered items after connection type filter:', filtered);
+  
+    // Filter based on search query if present
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -71,7 +81,11 @@ export function Feed() {
           item.poster.name.toLowerCase().includes(query)
       );
     }
-
+  
+    // Log the filtered items after search filter
+    console.log('Filtered items after search query:', filtered);
+  
+    // Filter based on time filter
     switch (timeFilter) {
       case "now":
         filtered = filtered.filter((item) => item.type === "realtime");
@@ -80,9 +94,13 @@ export function Feed() {
         filtered = filtered.filter((item) => item.type === "scheduled");
         break;
     }
-
+  
+    // Log the final filtered items
+    console.log('Final filtered items:', filtered);
+  
     return filtered;
   };
+  
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
