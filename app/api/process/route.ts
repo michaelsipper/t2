@@ -56,7 +56,6 @@ export async function POST(req: Request) {
       const [result] = await visionClient.textDetection(buffer);
       const detections = result.textAnnotations;
       extractedText = detections && detections[0].description ? detections[0].description : '';
-
     }
 
     if (!extractedText) {
@@ -65,24 +64,18 @@ export async function POST(req: Request) {
 
     console.log('Extracted text:', extractedText);
 
-    const systemPrompt = `Extract the event details from the text:
-    - Title
-    - Date and Time
-    - Location
-    - Description
-    - Type: "social", "business", or "entertainment"`;
+    const systemPrompt = `Extract the event details from the text in JSON format with these fields:
+    - title (string)
+    - datetime (string in ISO format if possible, otherwise a readable date)
+    - location (an object with name and optional address)
+    - description (string)
+    - type (either "social", "business", or "entertainment")`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: extractedText,
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: extractedText },
       ],
       max_tokens: 500,
     });
@@ -91,7 +84,6 @@ export async function POST(req: Request) {
 
     let eventData;
     try {
-      // Check if gptContent is valid JSON by testing if it starts with '{' or '['
       if (gptContent.trim().startsWith('{') || gptContent.trim().startsWith('[')) {
         eventData = JSON.parse(gptContent);
       } else {
@@ -99,6 +91,7 @@ export async function POST(req: Request) {
       }
     } catch (jsonError) {
       console.error('JSON parsing error:', jsonError);
+      console.log('OpenAI response content:', gptContent);
       return NextResponse.json({ error: 'Error parsing response from OpenAI' }, { status: 500 });
     }
 
