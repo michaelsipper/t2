@@ -1,7 +1,6 @@
-//feed-card.tsx
-
 "use client";
-import { Heart, MessageCircle, Send, Repeat } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Heart, MessageCircle, Send, Repeat, MoreVertical, Trash2 } from "lucide-react";
 import { TimeProgressBar } from "./time-progress-bar";
 import { ParticipantsDisplay } from "./participants-display";
 import type { FeedItem } from "@/lib/types";
@@ -10,6 +9,7 @@ interface FeedCardProps {
   item: FeedItem;
   onInterestToggle: (id: number) => void;
   onRepostToggle: (id: number) => void;
+  onDelete: (id: number) => void;
   isInterested: boolean;
   isReposted: boolean;
 }
@@ -18,11 +18,52 @@ export function FeedCard({
   item,
   onInterestToggle,
   onRepostToggle,
+  onDelete,
   isInterested,
   isReposted,
 }: FeedCardProps) {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden relative">
+      {/* Menu Button */}
+      <div className="absolute top-4 right-4 z-10" ref={menuRef}>
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        >
+          <MoreVertical className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+        </button>
+
+        {/* Dropdown Menu */}
+        {showMenu && (
+          <div className="absolute right-0 mt-2 w-48 py-1 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700">
+            <button
+              onClick={() => {
+                onDelete(item.id);
+                setShowMenu(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Plan
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Repost Header */}
       {item.type === "repost" && (
         <>

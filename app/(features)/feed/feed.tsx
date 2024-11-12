@@ -1,13 +1,9 @@
-//feed.tsx
-
 'use client';
 import { useState } from "react";
 import { Search, Menu } from "lucide-react";
 import { FeedCard } from "@/components/shared/feed-card";
-
 import { ThemeMenu } from '@/components/shared/theme-menu';
 import { useAppContext } from "@/components/shared/AppContext";
-
 
 type TimeFilter = "all" | "now" | "later";
 type ConnectionType = "friends" | "mutuals" | "community";
@@ -20,8 +16,13 @@ export function Feed() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [repostedItems, setRepostedItems] = useState<Set<number>>(new Set());
 
-  const { interestedItems, addInterestedItem, removeInterestedItem, feedItems } = useAppContext();
-  // Use context for interested items
+  const { 
+    interestedItems, 
+    addInterestedItem, 
+    removeInterestedItem, 
+    feedItems,
+    deleteFeedItem
+  } = useAppContext();
 
   const tabs: ConnectionType[] = ["friends", "mutuals", "community"];
 
@@ -47,14 +48,10 @@ export function Feed() {
   };
 
   const getFilteredItems = () => {
-    console.log('Current feed items:', feedItems); // Log all feed items from context
-  
-    let filtered = [...feedItems]; // Copy the feedItems array from context
-  
-    // Log the currently active tab for filtering
+    console.log('Current feed items:', feedItems);
+    let filtered = [...feedItems];
+
     console.log('Current active tab:', activeTab);
-  
-    // Filter based on active tab
     switch (activeTab) {
       case "friends":
         filtered = filtered.filter((item) => item.poster.connection === "1st");
@@ -66,11 +63,7 @@ export function Feed() {
         filtered = filtered.filter((item) => item.poster.connection === "3rd");
         break;
     }
-  
-    // Log the filtered items after connection type filter
-    console.log('Filtered items after connection type filter:', filtered);
-  
-    // Filter based on search query if present
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -81,11 +74,7 @@ export function Feed() {
           item.poster.name.toLowerCase().includes(query)
       );
     }
-  
-    // Log the filtered items after search filter
-    console.log('Filtered items after search query:', filtered);
-  
-    // Filter based on time filter
+
     switch (timeFilter) {
       case "now":
         filtered = filtered.filter((item) => item.type === "realtime");
@@ -94,13 +83,10 @@ export function Feed() {
         filtered = filtered.filter((item) => item.type === "scheduled");
         break;
     }
-  
-    // Log the final filtered items
-    console.log('Final filtered items:', filtered);
-  
+
+    console.log('Filtered items:', filtered);
     return filtered;
   };
-  
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
@@ -195,7 +181,10 @@ export function Feed() {
               item={item}
               onInterestToggle={() => toggleInterest(item.id)}
               onRepostToggle={() => toggleRepost(item.id)}
-              isInterested={interestedItems.some((interestedItem) => interestedItem.id === item.id)}
+              onDelete={deleteFeedItem}
+              isInterested={interestedItems.some(
+                (interestedItem) => interestedItem.id === item.id
+              )}
               isReposted={repostedItems.has(item.id)}
             />
           ))}
