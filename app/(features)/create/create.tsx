@@ -1,28 +1,28 @@
 //create.tsx
 
-'use client';
+"use client";
 
 import { useState } from "react";
-import { 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  Upload, 
-  Link, 
-  Loader2, 
-  X, 
-  Eye, 
-  Users, 
-  Timer, 
-  UserMinus, 
-  UserPlus, 
-  Globe, 
-  UserCircle2, 
-  Users2 
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Upload,
+  Link,
+  Loader2,
+  X,
+  Eye,
+  Users,
+  Timer,
+  UserMinus,
+  UserPlus,
+  Globe,
+  UserCircle2,
+  Users2,
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import type { FeedItem, EventLocation } from "@/lib/types";
 import { useAppContext } from "@/components/shared/AppContext";
 import { FeedCard } from "@/components/shared/feed-card";
@@ -80,23 +80,23 @@ export function Create() {
 
   const visibilityOptions = [
     {
-      value: 'friends' as const,
-      label: 'Friends',
+      value: "friends" as const,
+      label: "Friends",
       icon: UserCircle2,
-      description: 'Only your friends can see this'
+      description: "Only your friends can see this",
     },
     {
-      value: 'mutuals' as const,
-      label: 'Mutuals',
+      value: "mutuals" as const,
+      label: "Mutuals",
       icon: Users2,
-      description: 'Friends and mutual connections'
+      description: "Friends and mutual connections",
     },
     {
-      value: 'community' as const,
-      label: 'Community',
+      value: "community" as const,
+      label: "Community",
       icon: Globe,
-      description: 'Anyone can see this'
-    }
+      description: "Anyone can see this",
+    },
   ];
 
   const formatDateTime = (dateString?: string) => {
@@ -109,17 +109,22 @@ export function Create() {
     }
   };
 
-  const getPosterConnection = (visibility: Visibility): '1st' | '2nd' | '3rd' => {
+  const getPosterConnection = (
+    visibility: Visibility
+  ): "1st" | "2nd" | "3rd" => {
     switch (visibility) {
-      case 'friends': return '1st';
-      case 'mutuals': return '2nd';
-      case 'community': return '3rd';
+      case "friends":
+        return "1st";
+      case "mutuals":
+        return "2nd";
+      case "community":
+        return "3rd";
     }
   };
 
   const generatePreviewData = (): FeedItem => {
     let totalSpots: number = 0;
-    
+
     if (formData.hasAttendeeLimit) {
       totalSpots = formData.attendeeCount || 0;
     } else {
@@ -131,7 +136,7 @@ export function Create() {
       type: planType === "live" ? "realtime" : "scheduled",
       poster: {
         name: "You",
-        connection: getPosterConnection(formData.visibility)
+        connection: getPosterConnection(formData.visibility),
       },
       event: {
         title: formData.title,
@@ -163,7 +168,10 @@ export function Create() {
         if (!formData.datetime) {
           newErrors.datetime = "Date and time are required";
         }
-        if (formData.hasAttendeeLimit && (!formData.attendeeCount || formData.attendeeCount < 1)) {
+        if (
+          formData.hasAttendeeLimit &&
+          (!formData.attendeeCount || formData.attendeeCount < 1)
+        ) {
           newErrors.attendeeCount = "Number of attendees must be at least 1";
         }
         break;
@@ -198,16 +206,19 @@ export function Create() {
     setErrors({});
   };
 
-  const handleUploadProcess = async (type: 'url' | 'image', value: string | File) => {
+  const handleUploadProcess = async (
+    type: "url" | "image",
+    value: string | File
+  ) => {
     try {
       setIsProcessing(true);
       setErrors({});
 
       const formData = new FormData();
-      if (type === 'url') {
-        formData.append('url', value as string);
+      if (type === "url") {
+        formData.append("url", value as string);
       } else {
-        formData.append('image', value as File);
+        formData.append("image", value as File);
         const reader = new FileReader();
         reader.onloadend = () => setPreview(reader.result as string);
         reader.readAsDataURL(value as File);
@@ -221,14 +232,14 @@ export function Create() {
       if (!response.ok) throw new Error("Failed to process upload");
 
       const processedData = await response.json();
-      
-      setUploadData(prev => ({
+
+      setUploadData((prev) => ({
         ...prev,
         processedData,
-        [type === 'url' ? 'eventURL' : 'media']: value,
+        [type === "url" ? "eventURL" : "media"]: value,
       }));
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         title: processedData.title || "",
         description: processedData.description || "",
@@ -259,26 +270,33 @@ export function Create() {
             <button
               key={option.value}
               type="button"
-              onClick={() => setFormData(prev => ({ ...prev, visibility: option.value }))}
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, visibility: option.value }))
+              }
               className={`
                 w-full flex items-center gap-3 p-3 rounded-lg transition-colors
-                ${formData.visibility === option.value 
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-500'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent'
+                ${
+                  formData.visibility === option.value
+                    ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-500"
+                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
                 }
               `}
             >
-              <Icon className={`w-5 h-5 ${
-                formData.visibility === option.value
-                  ? 'text-blue-500'
-                  : 'text-zinc-500 dark:text-zinc-400'
-              }`} />
-              <div className="flex-1 text-left">
-                <p className={`font-medium ${
+              <Icon
+                className={`w-5 h-5 ${
                   formData.visibility === option.value
-                    ? 'text-blue-500'
-                    : 'text-zinc-900 dark:text-zinc-100'
-                }`}>
+                    ? "text-blue-500"
+                    : "text-zinc-500 dark:text-zinc-400"
+                }`}
+              />
+              <div className="flex-1 text-left">
+                <p
+                  className={`font-medium ${
+                    formData.visibility === option.value
+                      ? "text-blue-500"
+                      : "text-zinc-900 dark:text-zinc-100"
+                  }`}
+                >
                   {option.label}
                 </p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -303,7 +321,12 @@ export function Create() {
           </span>
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, hasAttendeeLimit: !prev.hasAttendeeLimit }))}
+            onClick={() =>
+              setFormData((prev) => ({
+                ...prev,
+                hasAttendeeLimit: !prev.hasAttendeeLimit,
+              }))
+            }
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
             {formData.hasAttendeeLimit ? (
@@ -328,10 +351,12 @@ export function Create() {
               placeholder="Number of attendees needed"
               className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white"
               value={formData.attendeeCount || ""}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                attendeeCount: parseInt(e.target.value) 
-              }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  attendeeCount: parseInt(e.target.value),
+                }))
+              }
             />
           </div>
         )}
@@ -342,54 +367,57 @@ export function Create() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     try {
       setIsProcessing(true);
-  
+
       // Create the new post with all required fields
-      const newPost: Omit<FeedItem, 'id'> = {
+      const newPost: Omit<FeedItem, "id"> = {
         type: planType === "live" ? "realtime" : "scheduled",
         poster: {
           name: "You", // This might eventually be pulled from user context
-          connection: getPosterConnection(formData.visibility)
+          connection: getPosterConnection(formData.visibility),
         },
         event: {
           title: formData.title,
           description: formData.description || "",
           location: formData.location.name,
-          time: formData.datetime ? formatDateTime(formData.datetime) : undefined,
+          time: formData.datetime
+            ? formatDateTime(formData.datetime)
+            : undefined,
           startTime: planType === "live" ? Date.now() : undefined,
           duration: planType === "live" ? Number(formData.duration) : undefined,
           currentInterested: 0,
           openInvite: !formData.hasAttendeeLimit,
-          totalSpots: formData.hasAttendeeLimit ? (formData.attendeeCount || 0) : 999,
-          participants: [{
-            id: Date.now(), // Generate a unique ID for the participant
-            name: "You", // This might eventually be pulled from user context
-            avatar: null // Placeholder for user avatar
-          }]
-        }
+          totalSpots: formData.hasAttendeeLimit
+            ? formData.attendeeCount || 0
+            : 999,
+          participants: [
+            {
+              id: Date.now(), // Generate a unique ID for the participant
+              name: "You", // This might eventually be pulled from user context
+              avatar: null, // Placeholder for user avatar
+            },
+          ],
+        },
       };
-  
+
       // Log the new post data
-      console.log('Submitting new post:', newPost);
-  
+      console.log("Submitting new post:", newPost);
+
       // Add to feed using context
       addFeedItem(newPost);
-      console.log('Post submitted'); // Log success message
-  
+      console.log("Post submitted"); // Log success message
+
       showToast("Plan posted successfully!");
-      router.push('/feed');
+      router.push("/feed");
     } catch (error) {
-      console.error('Error posting plan:', error); // Log error if submission fails
+      console.error("Error posting plan:", error); // Log error if submission fails
       showToast("Failed to post plan");
     } finally {
       setIsProcessing(false);
     }
   };
-  
-  
-  
 
   const renderForm = () => {
     if (planType === "upload" && !isUploadProcessed) {
@@ -403,18 +431,26 @@ export function Create() {
                 placeholder="Event URL"
                 className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
                 value={uploadData.eventURL || ""}
-                onChange={(e) => setUploadData(prev => ({ ...prev, eventURL: e.target.value }))}
+                onChange={(e) =>
+                  setUploadData((prev) => ({
+                    ...prev,
+                    eventURL: e.target.value,
+                  }))
+                }
               />
               <button
                 type="button"
-                onClick={() => uploadData.eventURL && handleUploadProcess('url', uploadData.eventURL)}
+                onClick={() =>
+                  uploadData.eventURL &&
+                  handleUploadProcess("url", uploadData.eventURL)
+                }
                 className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
                 disabled={!uploadData.eventURL}
               >
                 Process URL
               </button>
             </div>
-            
+
             <div className="relative">
               <div className="flex items-center gap-2">
                 <Upload className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
@@ -422,20 +458,28 @@ export function Create() {
                   type="file"
                   accept="image/*"
                   className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-600 dark:text-zinc-400"
-                  onChange={(e) => e.target.files?.[0] && handleUploadProcess('image', e.target.files[0])}
+                  onChange={(e) =>
+                    e.target.files?.[0] &&
+                    handleUploadProcess("image", e.target.files[0])
+                  }
                 />
               </div>
 
               {preview && (
                 <div className="mt-4 relative">
-                  <img src={preview} alt="Preview" className="w-full rounded-lg" />
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full rounded-lg"
+                  />
                   <button
                     onClick={() => {
                       setPreview(null);
-                      setUploadData(prev => ({ ...prev, media: undefined }));
+                      setUploadData((prev) => ({ ...prev, media: undefined }));
                     }}
                     className="absolute top-2 right-2 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
-                  ><X className="w-4 h-4" />
+                  >
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -445,13 +489,13 @@ export function Create() {
           {isProcessing && (
             <div className="flex flex-col items-center justify-center gap-2 py-4">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">Processing upload...</span>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                Processing upload...
+              </span>
             </div>
           )}
 
-          {errors.upload && (
-            <Alert message={errors.upload} />
-          )}
+          {errors.upload && <Alert message={errors.upload} />}
         </div>
       );
     }
@@ -465,14 +509,18 @@ export function Create() {
             placeholder="Title"
             className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
           />
-          
+
           <textarea
             placeholder="Description (optional)"
             className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg min-h-[100px] text-black dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
           />
 
           <div className="flex items-center gap-2">
@@ -482,10 +530,12 @@ export function Create() {
               placeholder="Location"
               className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
               value={formData.location.name}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                location: { ...prev.location, name: e.target.value }
-              }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  location: { ...prev.location, name: e.target.value },
+                }))
+              }
             />
           </div>
 
@@ -497,7 +547,9 @@ export function Create() {
                 type="datetime-local"
                 className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white"
                 value={formData.datetime || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, datetime: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, datetime: e.target.value }))
+                }
               />
             </div>
           )}
@@ -510,13 +562,20 @@ export function Create() {
                 placeholder="Duration (in hours)"
                 className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-black dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
                 value={formData.duration || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    duration: parseInt(e.target.value),
+                  }))
+                }
               />
             </div>
           )}
 
           {/* Participant Control */}
-          {(planType === "scheduled" || (planType === "upload" && isUploadProcessed)) && renderParticipantControl()}
+          {(planType === "scheduled" ||
+            (planType === "upload" && isUploadProcessed)) &&
+            renderParticipantControl()}
 
           {/* Visibility Selector */}
           {renderVisibilitySelector()}
@@ -565,17 +624,25 @@ export function Create() {
           <button
             onClick={() => handlePlanTypeChange("scheduled")}
             className={`p-3 rounded-xl border transition-colors ${
-              planType === "scheduled" 
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" 
+              planType === "scheduled"
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                 : "border-zinc-200 dark:border-zinc-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
             }`}
           >
-            <Calendar className={`w-6 h-6 mx-auto ${
-              planType === "scheduled" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-400"
-            }`} />
-            <span className={`text-xs mt-1 block text-center font-medium ${
-              planType === "scheduled" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-300"
-            }`}>
+            <Calendar
+              className={`w-6 h-6 mx-auto ${
+                planType === "scheduled"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-400"
+              }`}
+            />
+            <span
+              className={`text-xs mt-1 block text-center font-medium ${
+                planType === "scheduled"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-300"
+              }`}
+            >
               Scheduled
             </span>
           </button>
@@ -583,17 +650,25 @@ export function Create() {
           <button
             onClick={() => handlePlanTypeChange("live")}
             className={`p-3 rounded-xl border transition-colors ${
-              planType === "live" 
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" 
+              planType === "live"
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                 : "border-zinc-200 dark:border-zinc-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
             }`}
           >
-            <Clock className={`w-6 h-6 mx-auto ${
-              planType === "live" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-400"
-            }`} />
-            <span className={`text-xs mt-1 block text-center font-medium ${
-              planType === "live" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-300"
-            }`}>
+            <Clock
+              className={`w-6 h-6 mx-auto ${
+                planType === "live"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-400"
+              }`}
+            />
+            <span
+              className={`text-xs mt-1 block text-center font-medium ${
+                planType === "live"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-300"
+              }`}
+            >
               Live
             </span>
           </button>
@@ -601,17 +676,25 @@ export function Create() {
           <button
             onClick={() => handlePlanTypeChange("upload")}
             className={`p-3 rounded-xl border transition-colors ${
-              planType === "upload" 
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" 
+              planType === "upload"
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                 : "border-zinc-200 dark:border-zinc-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
             }`}
           >
-            <Upload className={`w-6 h-6 mx-auto ${
-              planType === "upload" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-400"
-            }`} />
-            <span className={`text-xs mt-1 block text-center font-medium ${
-              planType === "upload" ? "text-blue-500" : "text-zinc-600 dark:text-zinc-300"
-            }`}>
+            <Upload
+              className={`w-6 h-6 mx-auto ${
+                planType === "upload"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-400"
+              }`}
+            />
+            <span
+              className={`text-xs mt-1 block text-center font-medium ${
+                planType === "upload"
+                  ? "text-blue-500"
+                  : "text-zinc-600 dark:text-zinc-300"
+              }`}
+            >
               Upload
             </span>
           </button>
@@ -624,6 +707,7 @@ export function Create() {
               item={generatePreviewData()}
               onInterestToggle={() => {}}
               onRepostToggle={() => {}}
+              onDelete={() => {}} // Add this line
               isInterested={false}
               isReposted={false}
             />
