@@ -2,9 +2,12 @@
 import { NextResponse } from 'next/server';
 import vision from '@google-cloud/vision';
 import OpenAI from 'openai';
-import puppeteer from 'puppeteer';
+import * as cheerio from 'cheerio';
 
-if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_CLOUD_PRIVATE_KEY || !process.env.GOOGLE_CLOUD_CLIENT_EMAIL || !process.env.OPENAI_API_KEY) {
+if (!process.env.GOOGLE_CLOUD_PROJECT_ID || 
+    !process.env.GOOGLE_CLOUD_PRIVATE_KEY || 
+    !process.env.GOOGLE_CLOUD_CLIENT_EMAIL || 
+    !process.env.OPENAI_API_KEY) {
   throw new Error('Some required environment variables are missing');
 }
 
@@ -31,6 +34,35 @@ function parseDateTimeString(dateTimeString: string | undefined): string | null 
   }
 }
 
+async function fetchUrlContent(url: string): Promise<string> {
+  try {
+    const response = await fetch(url);
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Remove script and style tags
+    $('script').remove();
+    $('style').remove();
+
+    // Extract meaningful content
+    const title = $('title').text();
+    const metaDescription = $('meta[name="description"]').attr('content') || '';
+    const h1 = $('h1').text();
+    const mainContent = $('main').text() || $('article').text() || $('body').text();
+
+    // Combine the extracted content
+    return `
+      Title: ${title}
+      Description: ${metaDescription}
+      Heading: ${h1}
+      Content: ${mainContent.substring(0, 1000)} // Limit content length
+    `.trim();
+  } catch (error) {
+    console.error('Error fetching URL:', error);
+    throw new Error('Failed to fetch URL content');
+  }
+}
+
 export async function POST(req: Request) {
   console.log('API endpoint hit for event processing');
 
@@ -43,11 +75,7 @@ export async function POST(req: Request) {
 
     if (url) {
       console.log('Processing URL:', url);
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-      await page.goto(url, { waitUntil: 'networkidle2' });
-      extractedText = await page.evaluate(() => document.body.innerText);
-      await browser.close();
+      extractedText = await fetchUrlContent(url);
     }
 
     if (file) {
