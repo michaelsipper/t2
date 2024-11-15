@@ -3,11 +3,11 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Footprints, PlusCircle, Bell, User } from 'lucide-react'; // Removed Map import
+import { Home, ScrollText, PlusCircle, Bell, User } from 'lucide-react'; // Removed Map import
 
 const navItems = [
   { icon: Home, label: 'Feed', href: '/feed' },
-  { icon: Footprints, label: 'Footprint', href: '/footprint' },
+  { icon: ScrollText, label: 'Board', href: '/footprint' },
   { icon: PlusCircle, label: 'Create', href: '/create' },
   { icon: Bell, label: 'Inbox', href: '/inbox' },
   { icon: User, label: 'Profile', href: '/profile' },
