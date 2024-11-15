@@ -62,7 +62,7 @@ const initialProfileData: ProfileData = {
   bannerUrl: null,
   stats: {
     flakeScore: 95,
-    friendCount: 342,
+    friendCount: 37,
     status: "Down to hangout",
   },
 };
