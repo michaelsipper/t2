@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ReactNode } from "react";
 // ... rest of the code
 import {
   Camera,
@@ -159,7 +159,7 @@ const StatsCard = ({
   );
 };
 
-const VerificationInfo = ({ joinDate }: { joinDate: string }) => (
+const VerificationInfo = ({ joinDate }: { joinDate: string | React.ReactNode }) => (
   <div className="mt-3 flex items-center justify-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
     <div className="flex items-center gap-1">
       <Calendar className="w-4 h-4" />
