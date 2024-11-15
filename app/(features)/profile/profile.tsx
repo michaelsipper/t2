@@ -225,43 +225,48 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-16">
-      {/* Banner */}
-      <div
-        className="relative h-32 bg-gradient-to-r from-indigo-400 to-sky-400 bg-cover bg-center"
-        style={
-          profileData.bannerUrl
-            ? { backgroundImage: `url(${profileData.bannerUrl})` }
-            : undefined
-        }
-      >
-        <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
-        {isEditing && (
-          <div className="absolute bottom-4 right-4">
-            <label
-              className="block w-10 h-10 cursor-pointer touch-manipulation"
-              role="button"
-              tabIndex={0}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleBannerFileSelect}
-                onClick={(e) => {
-                  // Reset the input value to ensure onChange fires even if the same file is selected
-                  (e.target as HTMLInputElement).value = "";
-                }}
-              />
-              <div className="w-full h-full p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors active:bg-black/60">
-                <Camera className="w-full h-full" />
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      {/* Banner Container with constrained width */}
+      <div className="w-full bg-white dark:bg-zinc-950">
+        <div className="max-w-lg mx-auto relative">
+          {/* Banner */}
+          <div
+            className="relative h-32 bg-gradient-to-r from-indigo-400 to-sky-400 bg-cover bg-center rounded-none sm:rounded-b-2xl overflow-hidden"
+            style={
+              profileData.bannerUrl
+                ? { backgroundImage: `url(${profileData.bannerUrl})` }
+                : undefined
+            }
+          >
+            <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
+            {isEditing && (
+              <div className="absolute bottom-4 right-4">
+                <label
+                  className="block w-10 h-10 cursor-pointer touch-manipulation"
+                  role="button"
+                  tabIndex={0}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleBannerFileSelect}
+                    onClick={(e) => {
+                      (e.target as HTMLInputElement).value = "";
+                    }}
+                  />
+                  <div className="w-full h-full p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors active:bg-black/60">
+                    <Camera className="w-full h-full" />
+                  </div>
+                </label>
               </div>
-            </label>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4">
+      {/* Content - Constrained width */}
+      <div className="max-w-lg mx-auto px-4">
         {/* Profile Header Section */}
         <div className="relative -mt-16">
           <div className="flex gap-6">
