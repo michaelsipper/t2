@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Camera,
-  Edit2,
   MapPin,
   Calendar,
-  CheckCircle2,
   Shield,
-  Star,
   Settings,
   Share2,
-  Users,
-  Clock,
-  LayoutGrid,
+  Plus,
+  X,
+  Check,
+  Image,
+  Edit3,
   Heart,
 } from "lucide-react";
 import { useAppContext } from "@/components/shared/AppContext";
 import { FeedCard } from "@/components/shared/feed-card";
-import { Alert } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import type { FeedItem } from "@/lib/types";
 
@@ -27,6 +25,18 @@ interface ProfileStats {
   friendCount: number;
   plansCreated: number;
   plansAttended: number;
+}
+
+interface ProfileBlurb {
+  id: string;
+  prompt: string;
+  response: string;
+}
+
+interface ProfilePhoto {
+  id: string;
+  url: string | null;
+  order: number;
 }
 
 const FlakeScoreBadge = ({ score }: { score: number }) => {
@@ -50,15 +60,32 @@ const FlakeScoreBadge = ({ score }: { score: number }) => {
 function Profile() {
   const { feedItems } = useAppContext();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<
-    "upcoming" | "past" | "interested"
-  >("upcoming");
+  const [activeTab, setActiveTab] = useState<"spotlight" | "interested">(
+    "spotlight"
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "Michael Sipper",
     location: "San Francisco, CA",
-    bio: "Always down for spontaneous adventures! 🎮 🏃‍♂️",
-    tags: ["Sports", "Gaming", "Hiking", "Movies", "Food"],
+    photos: [
+      { id: "1", url: null, order: 1 },
+      { id: "2", url: null, order: 2 },
+      { id: "3", url: null, order: 3 },
+    ] as ProfilePhoto[],
+    blurbs: [
+      {
+        id: "1",
+        prompt: "A perfect night looks like...",
+        response:
+          "Impromptu rooftop gatherings, vinyl records, and conversations that last until sunrise",
+      },
+      {
+        id: "2",
+        prompt: "Best spontaneous decision...",
+        response:
+          "Booking a one-way flight to Tokyo, ended up staying for a month",
+      },
+    ] as ProfileBlurb[],
     joinDate: "October 2023",
   });
 
@@ -69,52 +96,67 @@ function Profile() {
     plansAttended: 28,
   });
 
-  // Filter feed items based on active tab
-  const getFilteredItems = (): FeedItem[] => {
-    const userPosts = feedItems.filter(
-      (item) => item.poster.name === profileData.name
-    );
-    const now = new Date().getTime();
-
-    switch (activeTab) {
-      case "upcoming":
-        return userPosts.filter((item) => {
-          if (item.type === "scheduled") {
-            const eventTime = new Date(item.event.time || "").getTime();
-            return eventTime > now;
-          }
-          return item.type === "realtime";
-        });
-      case "past":
-        return userPosts.filter((item) => {
-          if (item.type === "scheduled") {
-            const eventTime = new Date(item.event.time || "").getTime();
-            return eventTime <= now;
-          }
-          return false;
-        });
-      case "interested":
-        return feedItems.filter((item) =>
-          item.event.participants.some((p) => p.name === profileData.name)
-        );
-      default:
-        return [];
-    }
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (
+    id: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (e.target.files && e.target.files[0]) {
-      // Implement photo upload logic here
-      showToast("Profile photo updated!");
+      setProfileData((prev) => ({
+        ...prev,
+        photos: prev.photos.map((photo) =>
+          photo.id === id
+            ? { ...photo, url: URL.createObjectURL(e.target.files![0]) }
+            : photo
+        ),
+      }));
+      showToast("Photo updated!");
     }
   };
 
-  const handleEditSave = () => {
-    if (isEditing) {
-      // Save profile changes
-      showToast("Profile updated successfully!");
+  const handleAddBlurb = () => {
+    const prompts = [
+      "My go-to adventure is...",
+      "You'll find me...",
+      "Best local spot...",
+      "Next on my list...",
+      "My signature move...",
+    ];
+
+    const unusedPrompts = prompts.filter(
+      (prompt) => !profileData.blurbs.some((blurb) => blurb.prompt === prompt)
+    );
+
+    if (unusedPrompts.length === 0) {
+      showToast("Maximum blurbs reached!");
+      return;
     }
-    setIsEditing(!isEditing);
+
+    const newBlurb: ProfileBlurb = {
+      id: Date.now().toString(),
+      prompt: unusedPrompts[0],
+      response: "",
+    };
+
+    setProfileData((prev) => ({
+      ...prev,
+      blurbs: [...prev.blurbs, newBlurb],
+    }));
+  };
+
+  const handleUpdateBlurb = (id: string, response: string) => {
+    setProfileData((prev) => ({
+      ...prev,
+      blurbs: prev.blurbs.map((blurb) =>
+        blurb.id === id ? { ...blurb, response } : blurb
+      ),
+    }));
+  };
+
+  const handleRemoveBlurb = (id: string) => {
+    setProfileData((prev) => ({
+      ...prev,
+      blurbs: prev.blurbs.filter((blurb) => blurb.id !== id),
+    }));
   };
 
   const handleShare = async () => {
@@ -124,12 +166,11 @@ function Profile() {
           .toLowerCase()
           .replace(" ", "-")}`
       );
-      showToast("Profile link copied to clipboard!");
+      showToast("Profile link copied!");
     } catch (error) {
       showToast("Failed to copy profile link");
     }
   };
-
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       {/* Profile Header */}
@@ -138,7 +179,7 @@ function Profile() {
       </div>
 
       {/* Profile Content */}
-      <div className="max-w-2xl mx-auto px-4 -mt-24 relative z-10 pb-20">
+      <div className="max-w-2xl mx-auto px-4 -mt-24 relative z-10 pb-24">
         {/* Profile Photo & Basic Info */}
         <div className="flex flex-col items-center">
           <div className="relative">
@@ -156,7 +197,7 @@ function Profile() {
                   type="file"
                   className="hidden"
                   accept="image/*"
-                  onChange={handlePhotoUpload}
+                  onChange={(e) => handlePhotoUpload("profile", e)}
                 />
               </label>
             )}
@@ -186,11 +227,6 @@ function Profile() {
                   className="w-5 h-5 text-blue-500 cursor-help"
                   aria-label="Verified Account"
                 />
-                <div className="absolute bottom-full mb-2 hidden group-hover:block">
-                  <div className="bg-zinc-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                    Verified Account
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -210,23 +246,6 @@ function Profile() {
                 />
               ) : (
                 <span>{profileData.location}</span>
-              )}
-            </div>
-
-            <div className="mt-2">
-              {isEditing ? (
-                <textarea
-                  value={profileData.bio}
-                  onChange={(e) =>
-                    setProfileData((prev) => ({ ...prev, bio: e.target.value }))
-                  }
-                  className="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded-lg p-2 focus:outline-none focus:border-blue-500 text-zinc-600 dark:text-zinc-400"
-                  rows={2}
-                />
-              ) : (
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  {profileData.bio}
-                </p>
               )}
             </div>
           </div>
@@ -261,61 +280,20 @@ function Profile() {
               </div>
             </div>
           </div>
-
-          {/* Interest Tags */}
-          <div className="w-full mt-6">
-            <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">
-              Interests
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {profileData.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-sm text-zinc-600 dark:text-zinc-400"
-                >
-                  {tag}
-                </span>
-              ))}
-              {isEditing && (
-                <button
-                  onClick={() => {
-                    /* Implement add tag logic */
-                  }}
-                  className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-sm text-blue-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                >
-                  + Add
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Join Date & Verification */}
-          <div className="flex items-center gap-4 mt-6 text-sm text-zinc-500 dark:text-zinc-400">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>Joined {profileData.joinDate}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Shield className="w-4 h-4 text-emerald-500" />
-              <span>Verified User</span>
-            </div>
-          </div>
         </div>
 
-        {/* Activity Tabs */}
+        {/* Tabs */}
         <div className="mt-12">
           <div className="flex border-b border-zinc-200 dark:border-zinc-800">
             {[
-              { id: "upcoming", label: "Upcoming", icon: Clock },
-              { id: "past", label: "Past", icon: LayoutGrid },
-              { id: "interested", label: "Interested", icon: Heart },
+              { id: "spotlight", label: "Snapshot" },
+              { id: "interested", label: "Interested" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`
                   flex-1 py-4 text-sm font-medium border-b-2 transition-colors
-                  flex items-center justify-center gap-2
                   ${
                     activeTab === tab.id
                       ? "border-blue-500 text-blue-500"
@@ -323,34 +301,162 @@ function Profile() {
                   }
                 `}
               >
-                <tab.icon className="w-4 h-4" />
                 {tab.label}
               </button>
             ))}
           </div>
 
-          {/* Activity Content */}
-          <div className="mt-6 space-y-6">
-            {getFilteredItems().map((item) => (
-              <FeedCard
-                key={item.id}
-                item={item}
-                onInterestToggle={() => {}}
-                onRepostToggle={() => {}}
-                onDelete={() => {}}
-                isInterested={false}
-                isReposted={false}
-              />
-            ))}
-            {getFilteredItems().length === 0 && (
-              <div className="text-center py-12">
-                <LayoutGrid className="w-12 h-12 mx-auto text-zinc-400 dark:text-zinc-600 mb-4" />
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">
-                  No activities to show
-                </h3>
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Activities will appear here once you create or join plans
-                </p>
+          {/* Tab Content */}
+          <div className="mt-6">
+            {activeTab === "spotlight" ? (
+              <div className="space-y-8">
+                {/* Photos Grid */}
+                <div className="grid grid-cols-6 gap-4">
+                  <div className="col-span-6 aspect-[2/1] relative rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                    {profileData.photos[0]?.url ? (
+                      <img
+                        src={profileData.photos[0].url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        {isEditing ? (
+                          <label className="cursor-pointer group">
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => handlePhotoUpload("0", e)}
+                            />
+                            <div className="flex flex-col items-center gap-2">
+                              <Plus className="w-8 h-8 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+                              <span className="text-sm text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">
+                                Add cover photo
+                              </span>
+                            </div>
+                          </label>
+                        ) : (
+                          <Image className="w-8 h-8 text-zinc-400" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {profileData.photos.slice(1).map((photo, index) => (
+                    <div
+                      key={photo.id}
+                      className="col-span-3 aspect-square relative rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800"
+                    >
+                      {photo.url ? (
+                        <img
+                          src={photo.url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          {isEditing ? (
+                            <label className="cursor-pointer group">
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => handlePhotoUpload(photo.id, e)}
+                              />
+                              <Plus className="w-8 h-8 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+                            </label>
+                          ) : (
+                            <Image className="w-8 h-8 text-zinc-400" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Blurbs */}
+                <div className="space-y-4">
+                  {profileData.blurbs.map((blurb) => (
+                    <div
+                      key={blurb.id}
+                      className="p-4 bg-gradient-to-br from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-950 rounded-2xl shadow-sm"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-sm font-medium text-zinc-400">
+                          {blurb.prompt}
+                        </h3>
+                        {isEditing && (
+                          <button
+                            onClick={() => handleRemoveBlurb(blurb.id)}
+                            className="p-1 text-zinc-400 hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      {isEditing ? (
+                        <textarea
+                          value={blurb.response}
+                          onChange={(e) =>
+                            handleUpdateBlurb(blurb.id, e.target.value)
+                          }
+                          className="w-full bg-transparent focus:outline-none text-zinc-900 dark:text-white resize-none"
+                          placeholder="Your response..."
+                          rows={2}
+                        />
+                      ) : (
+                        <p className="text-zinc-900 dark:text-white leading-relaxed">
+                          {blurb.response}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {isEditing && profileData.blurbs.length < 5 && (
+                    <button
+                      onClick={handleAddBlurb}
+                      className="w-full p-4 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    >
+                      Add a prompt
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {feedItems
+                  .filter((item) =>
+                    item.event.participants.some(
+                      (p) => p.name === profileData.name
+                    )
+                  )
+                  .map((item) => (
+                    <FeedCard
+                      key={item.id}
+                      item={item}
+                      onInterestToggle={() => {}}
+                      onRepostToggle={() => {}}
+                      onDelete={() => {}}
+                      isInterested={false}
+                      isReposted={false}
+                    />
+                  ))}
+                {feedItems.filter((item) =>
+                  item.event.participants.some(
+                    (p) => p.name === profileData.name
+                  )
+                ).length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      <Heart className="w-8 h-8 text-zinc-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">
+                      No interested plans yet
+                    </h3>
+                    <p className="text-zinc-600 dark:text-zinc-400">
+                      When you express interest in plans, they'll appear here
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -360,13 +466,13 @@ function Profile() {
       {/* Action Buttons */}
       <div className="fixed bottom-20 right-4 flex flex-col gap-2">
         <button
-          onClick={handleEditSave}
+          onClick={() => setIsEditing(!isEditing)}
           className="p-3 rounded-full bg-white dark:bg-zinc-800 shadow-lg hover:shadow-xl transition-all"
         >
           {isEditing ? (
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
+            <Check className="w-5 h-5 text-green-500" />
           ) : (
-            <Settings className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+            <Edit3 className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
           )}
         </button>
         <button
