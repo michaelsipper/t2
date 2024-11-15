@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { 
+import {
   Camera,
   Edit2,
   Plus,
@@ -40,38 +40,38 @@ function FlakeScoreMeter({ score }: { score: number }) {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg className="transform -rotate-90 w-24 h-24">
-        {/* Background circle */}
-        <circle
-          cx="42"
-          cy="42"
-          r="32"
-          stroke="currentColor"
-          strokeWidth="4"
-          fill="none"
-          className="text-zinc-200 dark:text-zinc-800"
-        />
-        {/* Progress circle */}
-        <circle
-          cx="42"
-          cy="42"
-          r="32"
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          fill="none"
-          className="text-indigo-500 transition-all duration-1000 ease-out"
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center">
-        <span className="text-xl font-semibold text-black dark:text-white">
-          {score}
-        </span>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          reliability
-        </span>
+    <div className="flex flex-col items-center gap-2">
+      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+        Flake Score
+      </span>
+      <div className="relative inline-flex items-center justify-center">
+        <svg className="transform -rotate-90 w-24 h-24">
+          <circle
+            cx="42"
+            cy="42"
+            r="32"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+            className="text-zinc-200 dark:text-zinc-800"
+          />
+          <circle
+            cx="42"
+            cy="42"
+            r="32"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            fill="none"
+            className="text-indigo-500 transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute">
+          <span className="text-2xl font-semibold text-black dark:text-white">
+            {score}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -88,14 +88,10 @@ export function Profile() {
 
   // Mocked user data
   const userData = {
-    name: "John Doe",
-    age: 25,
+    name: "Michael Sipper",
+    age: 22,
     flakeScore: 95,
-    stats: {
-      plansMade: 15,
-      attended: 12,
-      flaked: 1
-    }
+    friendCount: 342,
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +99,7 @@ export function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-20">
       {/* Modern Header Design */}
       <div className="relative h-64 bg-gradient-to-br from-indigo-400 via-purple-400 to-sky-400 overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -163,21 +159,13 @@ export function Profile() {
         {/* Stats Row */}
         <div className="flex items-center justify-around mb-8 py-6 border-y border-zinc-200 dark:border-zinc-800">
           <FlakeScoreMeter score={userData.flakeScore} />
-          <div className="space-y-4 text-center">
-            <div>
-              <div className="flex items-center gap-1 text-emerald-500">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="font-medium">{userData.stats.attended}</span>
-              </div>
-              <span className="text-xs text-zinc-500">Attended</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1 text-rose-500">
-                <XCircle className="w-4 h-4" />
-                <span className="font-medium">{userData.stats.flaked}</span>
-              </div>
-              <span className="text-xs text-zinc-500">Missed</span>
-            </div>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-2xl font-semibold text-black dark:text-white">
+              {userData.friendCount}
+            </span>
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              Friends
+            </span>
           </div>
         </div>
 
@@ -185,19 +173,20 @@ export function Profile() {
         <div className="mb-8">
           <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-6">
             {[
-              { id: 'active', label: 'Active', icon: Clock },
-              { id: 'past', label: 'Past', icon: Calendar },
-              { id: 'interested', label: 'Interested', icon: Plus }
-            ].map(tab => (
+              { id: "active", label: "Active", icon: Clock },
+              { id: "past", label: "Past", icon: Calendar },
+              { id: "interested", label: "Interested", icon: Plus },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as PlanTab)}
                 className={`
                   flex-1 py-3 flex items-center justify-center gap-2
                   text-sm font-medium border-b-2 transition-colors
-                  ${activeTab === tab.id
-                    ? 'border-black dark:border-white text-black dark:text-white'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                  ${
+                    activeTab === tab.id
+                      ? "border-black dark:border-white text-black dark:text-white"
+                      : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                   }
                 `}
               >
@@ -224,7 +213,7 @@ export function Profile() {
                 key={index}
                 className={`
                   aspect-[4/5] rounded-xl overflow-hidden
-                  ${index === 0 ? 'col-span-2 row-span-2' : ''}
+                  ${index === 0 ? "col-span-2 row-span-2" : ""}
                   bg-gradient-to-br from-zinc-100 to-zinc-200 
                   dark:from-zinc-800 dark:to-zinc-900
                 `}
@@ -247,9 +236,9 @@ export function Profile() {
                   const newBlurb = {
                     id: Date.now(),
                     prompt: "I want to make memories by...",
-                    answer: ""
+                    answer: "",
                   };
-                  setBlurbs(prev => [...prev, newBlurb]);
+                  setBlurbs((prev) => [...prev, newBlurb]);
                 }}
                 className="w-full p-6 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700
                           hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all
@@ -258,7 +247,7 @@ export function Profile() {
                 Add your first prompt
               </button>
             ) : (
-              blurbs.map(blurb => (
+              blurbs.map((blurb) => (
                 <div
                   key={blurb.id}
                   className="p-6 rounded-xl bg-gradient-to-br from-zinc-50 to-white
