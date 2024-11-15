@@ -240,9 +240,9 @@ function Profile() {
           >
             <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
             {isEditing && (
-              <div className="absolute bottom-4 right-4">
-                <label
-                  className="block w-10 h-10 cursor-pointer touch-manipulation"
+              <div className="absolute bottom-4 right-4 z-10">
+                <label 
+                  className="block cursor-pointer touch-manipulation active:transform active:scale-95 transition-transform"
                   role="button"
                   tabIndex={0}
                 >
@@ -252,11 +252,11 @@ function Profile() {
                     className="hidden"
                     onChange={handleBannerFileSelect}
                     onClick={(e) => {
-                      (e.target as HTMLInputElement).value = "";
+                      (e.target as HTMLInputElement).value = '';
                     }}
                   />
-                  <div className="w-full h-full p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors active:bg-black/60">
-                    <Camera className="w-full h-full" />
+                  <div className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors flex items-center justify-center active:bg-black/60">
+                    <Camera className="w-6 h-6" />
                   </div>
                 </label>
               </div>
