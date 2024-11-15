@@ -1,3 +1,4 @@
+//types.ts
 export interface Participant {
   id: number;
   name: string;
@@ -52,4 +53,12 @@ export interface EventData {
 
 export interface EditableEventData extends EventData {
   isEditing?: boolean;
+}
+
+// Add the CustomPlaylist type
+export interface CustomPlaylist {
+  id: number;
+  title: string;
+  description: string;
+  items: FeedItem[];
 }
