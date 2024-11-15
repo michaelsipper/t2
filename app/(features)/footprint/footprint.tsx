@@ -391,7 +391,7 @@ const Footprint: React.FC = () => {
               Your Public Board
             </h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-              Keep track of your social life ✨
+              
             </p>
           </div>
           <button className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors hover:scale-105 active:scale-95">
