@@ -10,12 +10,34 @@ import { useAppContext } from '@/components/shared/AppContext';
 import { FeedCard } from '@/components/shared/feed-card';
 import type { FeedItem } from '@/lib/types';
 
+interface ProfilePhoto {
+  id: string;
+  url: string | null;
+  order: number;
+}
+
+interface ProfileBlurb {
+  id: string;
+  prompt: string;
+  response: string;
+}
+
+interface ProfileData {
+  name: string;
+  age: number;
+  location: string;
+  bio: string;
+  photos: ProfilePhoto[];
+  blurbs: ProfileBlurb[];
+  joinDate: string;
+}
+
 function Profile() {
   const { showToast } = useToast();
   const { feedItems } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('photos');
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<ProfileData>({
     name: "Michael Sipper",
     age: 22,
     location: "San Francisco, CA",
@@ -53,13 +75,29 @@ function Profile() {
 
   const handlePhotoUpload = async (id: string, file: File) => {
     const url = URL.createObjectURL(file);
-    setProfileData((prev) => ({
+    setProfileData(prev => ({
       ...prev,
-      photos: prev.photos.map((photo) =>
+      photos: prev.photos.map(photo => 
         photo.id === id ? { ...photo, url } : photo
       ),
     }));
     showToast("Photo updated successfully!");
+  };
+
+  const handleUpdateBlurb = (id: string, response: string) => {
+    setProfileData((prev) => ({
+      ...prev,
+      blurbs: prev.blurbs.map((blurb) =>
+        blurb.id === id ? { ...blurb, response } : blurb
+      ),
+    }));
+  };
+
+  const handleRemoveBlurb = (id: string) => {
+    setProfileData((prev) => ({
+      ...prev,
+      blurbs: prev.blurbs.filter((blurb) => blurb.id !== id),
+    }));
   };
 
   const handleAddBlurb = () => {
@@ -80,7 +118,7 @@ function Profile() {
       return;
     }
 
-    const newBlurb = {
+    const newBlurb: ProfileBlurb = {
       id: Date.now().toString(),
       prompt: unusedPrompts[0],
       response: "",
@@ -92,33 +130,14 @@ function Profile() {
     }));
   };
 
-  const handleUpdateBlurb = (id: string, response: string) => {
-    setProfileData((prev) => ({
-      ...prev,
-      blurbs: prev.blurbs.map((blurb) =>
-        blurb.id === id ? { ...blurb, response } : blurb
-      ),
-    }));
-  };
-
-  const handleRemoveBlurb = (id: string) => {
-    setProfileData((prev) => ({
-      ...prev,
-      blurbs: prev.blurbs.filter((blurb) => blurb.id !== id),
-    }));
-  };
-
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 pb-16">
-      {/* Banner */}
       <div className="relative h-24 bg-gradient-to-r from-indigo-400 to-sky-400">
         <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
       </div>
 
       <div className="max-w-lg mx-auto px-4">
-        {/* Profile Info */}
         <div className="relative -mt-12 flex gap-4">
-          {/* Left Column - Photo */}
           <div className="relative">
             <div className="w-24 h-24 rounded-2xl ring-4 ring-white dark:ring-zinc-950 bg-gradient-to-br from-indigo-400 to-sky-400 flex items-center justify-center">
               <span className="text-2xl font-bold text-white">{profileData.name[0]}</span>
@@ -142,31 +161,33 @@ function Profile() {
             )}
           </div>
 
-          {/* Right Column - Info */}
-          <div className="flex-1 pt-2">
-            <div className="flex items-center gap-2">
+          <div className="flex-1 pt-8">
+            <div className="flex items-baseline gap-2">
               {isEditing ? (
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                  className="text-xl font-bold bg-transparent dark:text-white focus:outline-none"
-                />
+                <>
+                  <input
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                    className="text-xl font-bold bg-transparent dark:text-white focus:outline-none"
+                  />
+                  <span className="text-zinc-400 dark:text-zinc-500">,</span>
+                  <input
+                    type="number"
+                    value={profileData.age}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+                    className="w-12 text-sm bg-transparent dark:text-zinc-300 focus:outline-none"
+                    placeholder="Age"
+                  />
+                </>
               ) : (
-                <h2 className="text-xl font-bold dark:text-white">{profileData.name}</h2>
+                <>
+                  <h2 className="text-xl font-bold dark:text-white">{profileData.name}</h2>
+                  <span className="text-zinc-400 dark:text-zinc-500">,</span>
+                  <span className="text-sm dark:text-zinc-300">{profileData.age}</span>
+                </>
               )}
               <Shield className="w-4 h-4 text-blue-500" />
-              {isEditing ? (
-                <input
-                  type="number"
-                  value={profileData.age}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
-                  className="w-12 text-sm bg-transparent dark:text-zinc-300 focus:outline-none"
-                  placeholder="Age"
-                />
-              ) : (
-                <span className="text-sm dark:text-zinc-300">{profileData.age}</span>
-              )}
             </div>
 
             <div className="flex items-center gap-1 text-zinc-400 mt-1">
@@ -183,7 +204,6 @@ function Profile() {
               )}
             </div>
 
-            {/* Bio */}
             <div className="mt-2">
               {isEditing ? (
                 <textarea
@@ -200,7 +220,6 @@ function Profile() {
           </div>
         </div>
 
-        {/* Stats and Status */}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-4">
             <div>
@@ -232,7 +251,6 @@ function Profile() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex px-2 border-b border-zinc-200 dark:border-zinc-800 mt-6">
           {['photos', 'plans'].map((tab) => (
             <button
@@ -251,7 +269,6 @@ function Profile() {
           ))}
         </div>
 
-        {/* Content */}
         <div className="py-4">
           {activeTab === 'photos' ? (
             <div className="space-y-6">
