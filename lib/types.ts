@@ -1,8 +1,3 @@
-//types.ts
-
-// types.ts
-
-// Existing types remain unchanged
 export interface Participant {
   id: number;
   name: string;
@@ -37,64 +32,24 @@ export interface FeedItem {
   repostMessage?: string;
 }
 
-// New Profile-specific types
-export interface ProfileStats {
-  flakeScore: number;
-  friendCount: number;
-  plansCreated: number;
-  plansAttended: number;
-  plansCompleted: number;
-  interestAcceptanceRate: number;
-  averageResponseTime: number; // in minutes
-  topActivities: string[];
-  lastActive: string;
-}
-
-export interface ProfilePhoto {
-  id: string;
-  url: string | null;
-  order: number;
-  caption?: string;
-  isPrivate: boolean;
-}
-
-export interface ProfileBlurb {
-  id: string;
-  prompt: string;
-  response: string;
-  lastUpdated: string;
-}
-
-export interface ProfilePreferences {
-  maxGroupSize: number;
-  preferredActivities: string[];
-  availability: {
-    weekdays: boolean;
-    weekends: boolean;
-    evenings: boolean;
-    mornings: boolean;
-  };
-  locationPreference: {
-    radius: number; // in miles
-    neighborhoods: string[];
+export interface EventLocation {
+  name: string;
+  address?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
   };
 }
 
-export interface ProfileBadge {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  earnedDate: string;
+export interface EventData {
+  title: string;
+  datetime: string;
+  location: EventLocation;
+  description?: string;
+  capacity?: number;
+  type?: "social" | "business" | "entertainment";
 }
 
-export interface Profile {
-  name: string;
-  location: string;
-  photos: ProfilePhoto[];
-  blurbs: ProfileBlurb[];
-  preferences: ProfilePreferences;
-  badges: ProfileBadge[];
-  joinDate: string;
-  stats: ProfileStats;
+export interface EditableEventData extends EventData {
+  isEditing?: boolean;
 }
