@@ -30,7 +30,6 @@ interface ProfileBlurb {
   response: string;
 }
 
-// Replace SortableBlurb with regular Blurb component
 interface BlurbProps {
   prompt: string;
   response: string;
@@ -216,6 +215,15 @@ function Profile() {
     }
   };
 
+  const handleBannerFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleBannerUpload(file);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 pb-16">
       {/* Banner */}
@@ -229,19 +237,27 @@ function Profile() {
       >
         <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
         {isEditing && (
-          <label className="absolute bottom-4 right-4 cursor-pointer">
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) =>
-                e.target.files?.[0] && handleBannerUpload(e.target.files[0])
-              }
-            />
-            <div className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
-              <Camera className="w-5 h-5" />
-            </div>
-          </label>
+          <div className="absolute bottom-4 right-4">
+            <label
+              className="block w-10 h-10 cursor-pointer touch-manipulation"
+              role="button"
+              tabIndex={0}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleBannerFileSelect}
+                onClick={(e) => {
+                  // Reset the input value to ensure onChange fires even if the same file is selected
+                  (e.target as HTMLInputElement).value = "";
+                }}
+              />
+              <div className="w-full h-full p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors active:bg-black/60">
+                <Camera className="w-full h-full" />
+              </div>
+            </label>
+          </div>
         )}
       </div>
 
