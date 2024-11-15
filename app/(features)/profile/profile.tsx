@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { 
-  Camera, Edit2, MapPin, Calendar, 
-  CheckCircle2, Shield, Star,
-  Settings, Share2, Users,
-  Clock, LayoutGrid, Heart
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  Camera,
+  Edit2,
+  MapPin,
+  Calendar,
+  CheckCircle2,
+  Shield,
+  Star,
+  Settings,
+  Share2,
+  Users,
+  Clock,
+  LayoutGrid,
+  Heart,
+} from "lucide-react";
 import { useAppContext } from "@/components/shared/AppContext";
 import { FeedCard } from "@/components/shared/feed-card";
 import { Alert } from "@/components/ui/alert";
@@ -23,7 +32,8 @@ interface ProfileStats {
 const FlakeScoreBadge = ({ score }: { score: number }) => {
   const getBadgeColor = (score: number) => {
     if (score >= 90) return "text-green-500 bg-green-50 dark:bg-green-500/10";
-    if (score >= 70) return "text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10";
+    if (score >= 70)
+      return "text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10";
     return "text-red-500 bg-red-50 dark:bg-red-500/10";
   };
 
@@ -40,48 +50,52 @@ const FlakeScoreBadge = ({ score }: { score: number }) => {
 function Profile() {
   const { feedItems } = useAppContext();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'interested'>('upcoming');
+  const [activeTab, setActiveTab] = useState<
+    "upcoming" | "past" | "interested"
+  >("upcoming");
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "Michael Sipper",
     location: "San Francisco, CA",
     bio: "Always down for spontaneous adventures! 🎮 🏃‍♂️",
     tags: ["Sports", "Gaming", "Hiking", "Movies", "Food"],
-    joinDate: "October 2023"
+    joinDate: "October 2023",
   });
 
   const [stats, setStats] = useState<ProfileStats>({
     flakeScore: 95,
     friendCount: 342,
     plansCreated: 15,
-    plansAttended: 28
+    plansAttended: 28,
   });
 
   // Filter feed items based on active tab
   const getFilteredItems = (): FeedItem[] => {
-    const userPosts = feedItems.filter(item => item.poster.name === profileData.name);
+    const userPosts = feedItems.filter(
+      (item) => item.poster.name === profileData.name
+    );
     const now = new Date().getTime();
 
     switch (activeTab) {
-      case 'upcoming':
-        return userPosts.filter(item => {
-          if (item.type === 'scheduled') {
-            const eventTime = new Date(item.event.time || '').getTime();
+      case "upcoming":
+        return userPosts.filter((item) => {
+          if (item.type === "scheduled") {
+            const eventTime = new Date(item.event.time || "").getTime();
             return eventTime > now;
           }
-          return item.type === 'realtime';
+          return item.type === "realtime";
         });
-      case 'past':
-        return userPosts.filter(item => {
-          if (item.type === 'scheduled') {
-            const eventTime = new Date(item.event.time || '').getTime();
+      case "past":
+        return userPosts.filter((item) => {
+          if (item.type === "scheduled") {
+            const eventTime = new Date(item.event.time || "").getTime();
             return eventTime <= now;
           }
           return false;
         });
-      case 'interested':
-        return feedItems.filter(item => 
-          item.event.participants.some(p => p.name === profileData.name)
+      case "interested":
+        return feedItems.filter((item) =>
+          item.event.participants.some((p) => p.name === profileData.name)
         );
       default:
         return [];
@@ -105,7 +119,11 @@ function Profile() {
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(`https://tapdin.app/profile/${profileData.name.toLowerCase().replace(' ', '-')}`);
+      await navigator.clipboard.writeText(
+        `https://tapdin.app/profile/${profileData.name
+          .toLowerCase()
+          .replace(" ", "-")}`
+      );
       showToast("Profile link copied to clipboard!");
     } catch (error) {
       showToast("Failed to copy profile link");
@@ -151,23 +169,43 @@ function Profile() {
                   <input
                     type="text"
                     value={profileData.name}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                     className="bg-transparent border-b border-zinc-300 dark:border-zinc-700 text-center focus:outline-none focus:border-blue-500"
                   />
                 ) : (
                   profileData.name
                 )}
               </h1>
-              <Shield className="w-5 h-5 text-blue-500" title="Verified Account" />
+              <div className="relative group">
+                <Shield
+                  className="w-5 h-5 text-blue-500 cursor-help"
+                  aria-label="Verified Account"
+                />
+                <div className="absolute bottom-full mb-2 hidden group-hover:block">
+                  <div className="bg-zinc-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                    Verified Account
+                  </div>
+                </div>
+              </div>
             </div>
-            
+
             <div className="flex items-center justify-center gap-2 mt-2 text-zinc-600 dark:text-zinc-400">
               <MapPin className="w-4 h-4" />
               {isEditing ? (
                 <input
                   type="text"
                   value={profileData.location}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setProfileData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   className="bg-transparent border-b border-zinc-300 dark:border-zinc-700 text-center focus:outline-none focus:border-blue-500"
                 />
               ) : (
@@ -179,12 +217,16 @@ function Profile() {
               {isEditing ? (
                 <textarea
                   value={profileData.bio}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) =>
+                    setProfileData((prev) => ({ ...prev, bio: e.target.value }))
+                  }
                   className="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded-lg p-2 focus:outline-none focus:border-blue-500 text-zinc-600 dark:text-zinc-400"
                   rows={2}
                 />
               ) : (
-                <p className="text-zinc-600 dark:text-zinc-400">{profileData.bio}</p>
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  {profileData.bio}
+                </p>
               )}
             </div>
           </div>
@@ -198,19 +240,25 @@ function Profile() {
               <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {stats.friendCount}
               </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Friends</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                Friends
+              </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {stats.plansCreated}
               </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Created</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                Created
+              </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {stats.plansAttended}
               </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Attended</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                Attended
+              </div>
             </div>
           </div>
 
@@ -230,7 +278,9 @@ function Profile() {
               ))}
               {isEditing && (
                 <button
-                  onClick={() => {/* Implement add tag logic */}}
+                  onClick={() => {
+                    /* Implement add tag logic */
+                  }}
                   className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-sm text-blue-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 >
                   + Add
@@ -256,9 +306,9 @@ function Profile() {
         <div className="mt-12">
           <div className="flex border-b border-zinc-200 dark:border-zinc-800">
             {[
-              { id: 'upcoming', label: 'Upcoming', icon: Clock },
-              { id: 'past', label: 'Past', icon: LayoutGrid },
-              { id: 'interested', label: 'Interested', icon: Heart }
+              { id: "upcoming", label: "Upcoming", icon: Clock },
+              { id: "past", label: "Past", icon: LayoutGrid },
+              { id: "interested", label: "Interested", icon: Heart },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -266,9 +316,10 @@ function Profile() {
                 className={`
                   flex-1 py-4 text-sm font-medium border-b-2 transition-colors
                   flex items-center justify-center gap-2
-                  ${activeTab === tab.id
-                    ? 'border-blue-500 text-blue-500'
-                    : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ${
+                    activeTab === tab.id
+                      ? "border-blue-500 text-blue-500"
+                      : "border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                   }
                 `}
               >
