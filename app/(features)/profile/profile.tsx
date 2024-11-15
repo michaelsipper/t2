@@ -107,7 +107,7 @@ const PromptModal = ({
                 onAdd(prompt);
                 onClose();
               }}
-              className="w-full text-left px-4 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm"
+              className="w-full text-left px-4 py-3 rounded-xl text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm"
             >
               {prompt}
             </button>
@@ -147,7 +147,7 @@ const PromptModal = ({
         ) : (
           <button
             onClick={() => setShowCustomInput(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-colors text-sm"
           >
             <PlusCircle className="w-4 h-4" />
             Create Custom Prompt
