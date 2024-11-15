@@ -1,3 +1,4 @@
+// app/(features)/profile/profile.tsx
 "use client";
 
 import { useState } from "react";
@@ -16,7 +17,22 @@ import { Alert } from "@/components/ui/alert";
 import { useAppContext } from "@/components/shared/AppContext";
 import { FeedCard } from "@/components/shared/feed-card";
 
+// Add these interfaces
+interface ProfilePhoto {
+  id: number;
+  url: string;
+  order: number;
+}
+
+interface ProfileBlurb {
+  id: number;
+  prompt: string;
+  answer: string;
+}
+
 type PlanTab = "active" | "past" | "interested";
+
+// Rest of your code remains the same...
 
 // We'll create this as a separate component for cleaner organization
 function FlakeScoreMeter({ score }: { score: number }) {
