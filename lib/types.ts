@@ -1,4 +1,3 @@
-//types.ts
 export interface Participant {
   id: number;
   name: string;
@@ -55,10 +54,40 @@ export interface EditableEventData extends EventData {
   isEditing?: boolean;
 }
 
-// Add the CustomPlaylist type
 export interface CustomPlaylist {
   id: number;
   title: string;
   description: string;
   items: FeedItem[];
+}
+
+export interface ProfilePhoto {
+  id: string;
+  url: string | null;
+  order: number;
+}
+
+export interface ProfileBlurb {
+  id: string;
+  prompt: string;
+  response: string;
+}
+
+export interface ProfileStats {
+  flakeScore: number;
+  friendCount: number;
+  status: string;
+}
+
+export interface ProfileData {
+  name: string;
+  age: number;
+  location: string;
+  bio: string;
+  photos: ProfilePhoto[];
+  blurbs: ProfileBlurb[];
+  joinDate: string;
+  avatarUrl: string | null;
+  bannerUrl: string | null;
+  stats: ProfileStats;
 }

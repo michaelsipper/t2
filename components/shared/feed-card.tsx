@@ -1,3 +1,5 @@
+//feed-card.tsx
+
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Heart, MessageCircle, Send, Repeat, MoreVertical, Trash2 } from "lucide-react";
