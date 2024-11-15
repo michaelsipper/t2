@@ -10,32 +10,12 @@ import {
   Check,
   Edit3,
   Activity,
-  GripVertical,
   PlusCircle,
-  ChevronDown,
-  Pencil,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert } from "@/components/ui/alert";
 import { useAppContext } from "@/components/shared/AppContext";
 import { FeedCard } from "@/components/shared/feed-card";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import type { FeedItem } from "@/lib/types";
 
 interface ProfilePhoto {
@@ -50,8 +30,8 @@ interface ProfileBlurb {
   response: string;
 }
 
-interface SortableBlurbProps {
-  id: string;
+// Replace SortableBlurb with regular Blurb component
+interface BlurbProps {
   prompt: string;
   response: string;
   isEditing: boolean;
@@ -59,43 +39,16 @@ interface SortableBlurbProps {
   onRemove: () => void;
 }
 
-const SortableBlurb = ({
-  id,
+const Blurb = ({
   prompt,
   response,
   isEditing,
   onUpdate,
   onRemove,
-}: SortableBlurbProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
+}: BlurbProps) => {
   return (
-    <div ref={setNodeRef} style={style} className="mb-6">
-      <div className="flex items-center gap-2 mb-2">
-        {isEditing && (
-          <button
-            className="cursor-grab active:cursor-grabbing p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="w-4 h-4 text-zinc-400" />
-          </button>
-        )}
-        <h3 className="text-lg font-medium dark:text-zinc-100">{prompt}</h3>
-      </div>
+    <div className="mb-6">
+      <h3 className="text-lg font-medium dark:text-zinc-100 mb-2">{prompt}</h3>
       {isEditing ? (
         <div className="relative">
           <textarea
@@ -233,13 +186,6 @@ function Profile() {
     "My signature move...",
   ];
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const activePlans = feedItems.filter(
     (item) =>
       item.poster.name === profileData.name &&
@@ -267,21 +213,6 @@ function Profile() {
       const url = URL.createObjectURL(file);
       updateBannerPhoto(url);
       showToast("Banner updated successfully!");
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = profileData.blurbs.findIndex(
-        (blurb) => blurb.id === active.id
-      );
-      const newIndex = profileData.blurbs.findIndex(
-        (blurb) => blurb.id === over.id
-      );
-      const newBlurbs = arrayMove(profileData.blurbs, oldIndex, newIndex);
-      // Update blurbs order in context
-      newBlurbs.forEach((blurb) => updateBlurb(blurb.id, blurb.response));
     }
   };
 
@@ -426,191 +357,177 @@ function Profile() {
                 onChange={(e) => updateProfileData({ bio: e.target.value })}
                 placeholder="Add a bio..."
                 className="w-full text-sm bg-transparent dark:text-zinc-100 focus:outline-none resize-none min-h-[60px] max-h-[120px]"
-                />
-              ) : (
-                <p className="text-sm dark:text-zinc-100">{profileData.bio}</p>
-              )}
-            </div>
-  
-            {/* Stats Section */}
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex gap-6">
-                {/* Friends Count */}
-                <div>
-                  <div className="text-lg font-semibold dark:text-zinc-100">
-                    {profileData.stats.friendCount}
-                  </div>
-                  <div className="text-sm text-zinc-500">Friends</div>
-                </div>
-  
-                {/* Reliability Score */}
-                <div>
-                  <div className="text-lg font-semibold text-emerald-500">
-                    {profileData.stats.flakeScore}%
-                  </div>
-                  <div className="text-sm text-zinc-500">Reliable</div>
-                </div>
-              </div>
-  
-              {/* Status */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900">
-                <Activity className="w-4 h-4 text-emerald-500" />
-                {isEditing ? (
-                  <select
-                    value={profileData.stats.status}
-                    onChange={(e) => updateStats({ status: e.target.value })}
-                    className="text-sm bg-transparent dark:text-zinc-100 border-none focus:ring-0 cursor-pointer"
-                  >
-                    <option>Down to hangout</option>
-                    <option>Busy week</option>
-                    <option>Out of town</option>
-                    <option>Looking to explore</option>
-                  </select>
-                ) : (
-                  <span className="text-sm font-medium dark:text-zinc-100">
-                    {profileData.stats.status}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-  
-          {/* Tabs */}
-          <div className="border-b border-zinc-200 dark:border-zinc-800 mt-8">
-            <div className="flex gap-8">
-              {["photos", "plans"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`
-                    px-1 py-4 text-sm font-medium border-b-2 transition-colors
-                    ${
-                      activeTab === tab
-                        ? "border-blue-500 text-blue-500"
-                        : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                    }
-                  `}
-                >
-                  {tab === "photos" ? "Photos & Prompts" : "Active Plans"}
-                </button>
-              ))}
-            </div>
-          </div>
-  
-          {/* Content Section */}
-          <div className="py-6 space-y-6">
-            {activeTab === "photos" ? (
-              <div className="space-y-8">
-                {/* Photos and Prompts */}
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={profileData.blurbs.map((blurb) => blurb.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {profileData.photos.map((photo, index) => (
-                      <div key={photo.id} className="space-y-4">
-                        <div
-                          className={`relative rounded-2xl overflow-hidden ${
-                            index === 0 ? "aspect-[2/1]" : "aspect-square"
-                          } bg-zinc-100 dark:bg-zinc-900`}
-                        >
-                          {photo.url ? (
-                            <img
-                              src={photo.url}
-                              alt={`Photo ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Plus className="w-8 h-8 text-zinc-400" />
-                            </div>
-                          )}
-                          {isEditing && (
-                            <label className="absolute inset-0 cursor-pointer">
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) =>
-                                  e.target.files?.[0] &&
-                                  handlePhotoUpload(photo.id, e.target.files[0])
-                                }
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group">
-                                <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </label>
-                          )}
-                        </div>
-  
-                        {index < profileData.blurbs.length && (
-                          <SortableBlurb
-                            id={profileData.blurbs[index].id}
-                            prompt={profileData.blurbs[index].prompt}
-                            response={profileData.blurbs[index].response}
-                            isEditing={isEditing}
-                            onUpdate={(response) =>
-                              updateBlurb(profileData.blurbs[index].id, response)
-                            }
-                            onRemove={() =>
-                              removeBlurb(profileData.blurbs[index].id)
-                            }
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </SortableContext>
-                </DndContext>
-  
-                {isEditing &&
-                  profileData.blurbs.length < profileData.photos.length && (
-                    <button
-                      onClick={() => setShowPromptModal(true)}
-                      className="w-full p-4 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                    >
-                      + Add another prompt
-                    </button>
-                  )}
-              </div>
+              />
             ) : (
-              <div className="space-y-4">
-                {activePlans.length > 0 ? (
-                  activePlans.map((item) => (
-                    <FeedCard
-                      key={item.id}
-                      item={item}
-                      onInterestToggle={() => {}}
-                      onRepostToggle={() => {}}
-                      onDelete={() => {}}
-                      isInterested={false}
-                      isReposted={false}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-zinc-400">No active plans</p>
-                  </div>
-                )}
-              </div>
+              <p className="text-sm dark:text-zinc-100">{profileData.bio}</p>
             )}
           </div>
+
+          {/* Stats Section */}
+          <div className="mt-6 flex items-center justify-between">
+            <div className="flex gap-6">
+              {/* Friends Count */}
+              <div>
+                <div className="text-lg font-semibold dark:text-zinc-100">
+                  {profileData.stats.friendCount}
+                </div>
+                <div className="text-sm text-zinc-500">Friends</div>
+              </div>
+
+              {/* Reliability Score */}
+              <div>
+                <div className="text-lg font-semibold text-emerald-500">
+                  {profileData.stats.flakeScore}%
+                </div>
+                <div className="text-sm text-zinc-500">Reliable</div>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              {isEditing ? (
+                <select
+                  value={profileData.stats.status}
+                  onChange={(e) => updateStats({ status: e.target.value })}
+                  className="text-sm bg-transparent dark:text-zinc-100 border-none focus:ring-0 cursor-pointer"
+                >
+                  <option>Down to hangout</option>
+                  <option>Busy week</option>
+                  <option>Out of town</option>
+                  <option>Looking to explore</option>
+                </select>
+              ) : (
+                <span className="text-sm font-medium dark:text-zinc-100">
+                  {profileData.stats.status}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-  
-        {/* Prompt Modal */}
-        {showPromptModal && (
-          <PromptModal
-            isOpen={showPromptModal}
-            onClose={() => setShowPromptModal(false)}
-            onAdd={(prompt) => addBlurb(prompt)}
-            defaultPrompts={defaultPrompts}
-          />
-        )}
+
+        {/* Tabs */}
+        <div className="border-b border-zinc-200 dark:border-zinc-800 mt-8">
+          <div className="flex gap-8">
+            {["photos", "plans"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`
+                px-1 py-4 text-sm font-medium border-b-2 transition-colors
+                ${
+                  activeTab === tab
+                    ? "border-blue-500 text-blue-500"
+                    : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                }
+              `}
+              >
+                {tab === "photos" ? "Photos & Prompts" : "Active Plans"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="py-6 space-y-6">
+          {activeTab === "photos" ? (
+            <div className="space-y-8">
+              {/* Photos and Prompts */}
+              {profileData.photos.map((photo, index) => (
+                <div key={photo.id} className="space-y-4">
+                  <div
+                    className={`relative rounded-2xl overflow-hidden ${
+                      index === 0 ? "aspect-[2/1]" : "aspect-square"
+                    } bg-zinc-100 dark:bg-zinc-900`}
+                  >
+                    {photo.url ? (
+                      <img
+                        src={photo.url}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Plus className="w-8 h-8 text-zinc-400" />
+                      </div>
+                    )}
+                    {isEditing && (
+                      <label className="absolute inset-0 cursor-pointer">
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) =>
+                            e.target.files?.[0] &&
+                            handlePhotoUpload(photo.id, e.target.files[0])
+                          }
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group">
+                          <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </label>
+                    )}
+                  </div>
+
+                  {index < profileData.blurbs.length && (
+                    <Blurb
+                      prompt={profileData.blurbs[index].prompt}
+                      response={profileData.blurbs[index].response}
+                      isEditing={isEditing}
+                      onUpdate={(response) =>
+                        updateBlurb(profileData.blurbs[index].id, response)
+                      }
+                      onRemove={() => removeBlurb(profileData.blurbs[index].id)}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {isEditing &&
+                profileData.blurbs.length < profileData.photos.length && (
+                  <button
+                    onClick={() => setShowPromptModal(true)}
+                    className="w-full p-4 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    + Add another prompt
+                  </button>
+                )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activePlans.length > 0 ? (
+                activePlans.map((item) => (
+                  <FeedCard
+                    key={item.id}
+                    item={item}
+                    onInterestToggle={() => {}}
+                    onRepostToggle={() => {}}
+                    onDelete={() => {}}
+                    isInterested={false}
+                    isReposted={false}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-zinc-400">No active plans</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    );
-  }
-  
-  export default Profile;
+
+      {/* Prompt Modal */}
+      {showPromptModal && (
+        <PromptModal
+          isOpen={showPromptModal}
+          onClose={() => setShowPromptModal(false)}
+          onAdd={(prompt) => addBlurb(prompt)}
+          defaultPrompts={defaultPrompts}
+        />
+      )}
+    </div>
+  );
+}
+
+export default Profile;
