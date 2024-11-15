@@ -4,6 +4,67 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { FeedItem, CustomPlaylist } from "@/lib/types";
 import { feedItems as initialFeedItems } from "@/lib/mock-data";
 
+interface ProfilePhoto {
+  id: string;
+  url: string | null;
+  order: number;
+}
+
+interface ProfileBlurb {
+  id: string;
+  prompt: string;
+  response: string;
+}
+
+interface ProfileData {
+  name: string;
+  age: number;
+  location: string;
+  bio: string;
+  photos: ProfilePhoto[];
+  blurbs: ProfileBlurb[];
+  joinDate: string;
+  avatarUrl: string | null;
+  bannerUrl: string | null;
+  stats: {
+    flakeScore: number;
+    friendCount: number;
+    status: string;
+  };
+}
+
+const initialProfileData: ProfileData = {
+  name: "Michael Sipper",
+  age: 22,
+  location: "San Francisco, CA",
+  bio: "Exploring SF's hidden gems and building community through spontaneous adventures 🌉",
+  photos: [
+    { id: "1", url: null, order: 1 },
+    { id: "2", url: null, order: 2 },
+    { id: "3", url: null, order: 3 },
+  ],
+  blurbs: [
+    {
+      id: "1",
+      prompt: "A perfect night looks like...",
+      response: "Impromptu rooftop gatherings, vinyl records, and conversations that last until sunrise",
+    },
+    {
+      id: "2",
+      prompt: "Best spontaneous decision...",
+      response: "Booking a one-way flight to Tokyo, ended up staying for a month",
+    },
+  ],
+  joinDate: "October 2023",
+  avatarUrl: null,
+  bannerUrl: null,
+  stats: {
+    flakeScore: 95,
+    friendCount: 342,
+    status: "Down to hangout",
+  },
+};
+
 interface AppContextType {
   interestedItems: FeedItem[];
   addInterestedItem: (item: FeedItem) => void;
@@ -17,12 +78,20 @@ interface AppContextType {
   addToPlaylist: (playlistId: number, item: FeedItem) => void;
   removeFromPlaylist: (playlistId: number, itemId: number) => void;
   deletePlaylist: (playlistId: number) => void;
+  profileData: ProfileData;
+  updateProfileData: (data: Partial<ProfileData>) => void;
+  updateProfilePhoto: (id: string, url: string) => void;
+  updateAvatarPhoto: (url: string) => void;
+  updateBannerPhoto: (url: string) => void;
+  updateBlurb: (id: string, response: string) => void;
+  removeBlurb: (id: string) => void;
+  addBlurb: (prompt: string) => void;
+  updateStats: (stats: Partial<ProfileData['stats']>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  // Initialize interested items state with localStorage if available
   const [interestedItems, setInterestedItems] = useState<FeedItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('interestedItems');
@@ -31,7 +100,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return [];
   });
 
-  // Initialize feed items state with localStorage or initial mock data
   const [feedItems, setFeedItems] = useState<FeedItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('feedItems');
@@ -40,7 +108,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return initialFeedItems;
   });
 
-  // Initialize custom playlists
   const [customPlaylists, setCustomPlaylists] = useState<CustomPlaylist[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('customPlaylists');
@@ -49,15 +116,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return [];
   });
 
-  // Save to localStorage whenever items change
+  const [profileData, setProfileData] = useState<ProfileData>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('profileData');
+      return saved ? JSON.parse(saved) : initialProfileData;
+    }
+    return initialProfileData;
+  });
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('interestedItems', JSON.stringify(interestedItems));
       localStorage.setItem('feedItems', JSON.stringify(feedItems));
       localStorage.setItem('customPlaylists', JSON.stringify(customPlaylists));
+      localStorage.setItem('profileData', JSON.stringify(profileData));
     }
-  }, [interestedItems, feedItems, customPlaylists]);
+  }, [interestedItems, feedItems, customPlaylists, profileData]);
 
+  // Feed item functions
   const addInterestedItem = (item: FeedItem) => {
     setInterestedItems((prev) => {
       if (prev.some(existingItem => existingItem.id === item.id)) {
@@ -76,18 +152,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...item,
       id: Date.now(),
     };
-    console.log('Adding new item:', newItem);
-    setFeedItems((prev) => {
-      const newItems = [newItem, ...prev];
-      console.log('New feed state:', newItems);
-      return newItems;
-    });
+    setFeedItems((prev) => [newItem, ...prev]);
   };
 
   const deleteFeedItem = (itemId: number) => {
     setFeedItems((prev) => prev.filter(item => item.id !== itemId));
     setInterestedItems((prev) => prev.filter(item => item.id !== itemId));
-    // Also remove from any playlists
     setCustomPlaylists(prev => 
       prev.map(playlist => ({
         ...playlist,
@@ -125,13 +195,71 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCustomPlaylists(prev => prev.filter(playlist => playlist.id !== playlistId));
   };
 
-  // Reset should now also clear custom playlists
+  // Profile functions
+  const updateProfileData = (data: Partial<ProfileData>) => {
+    setProfileData(prev => ({ ...prev, ...data }));
+  };
+
+  const updateProfilePhoto = (id: string, url: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      photos: prev.photos.map(photo => 
+        photo.id === id ? { ...photo, url } : photo
+      ),
+    }));
+  };
+
+  const updateAvatarPhoto = (url: string) => {
+    setProfileData(prev => ({ ...prev, avatarUrl: url }));
+  };
+
+  const updateBannerPhoto = (url: string) => {
+    setProfileData(prev => ({ ...prev, bannerUrl: url }));
+  };
+
+  const updateBlurb = (id: string, response: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      blurbs: prev.blurbs.map(blurb => 
+        blurb.id === id ? { ...blurb, response } : blurb
+      ),
+    }));
+  };
+
+  const removeBlurb = (id: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      blurbs: prev.blurbs.filter(blurb => blurb.id !== id),
+    }));
+  };
+
+  const addBlurb = (prompt: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      blurbs: [...prev.blurbs, {
+        id: Date.now().toString(),
+        prompt,
+        response: "",
+      }],
+    }));
+  };
+
+  const updateStats = (stats: Partial<ProfileData['stats']>) => {
+    setProfileData(prev => ({
+      ...prev,
+      stats: { ...prev.stats, ...stats },
+    }));
+  };
+
   const resetToInitialFeed = () => {
     setFeedItems(initialFeedItems);
     setCustomPlaylists([]);
+    setProfileData(initialProfileData);
+    setInterestedItems([]);
     localStorage.removeItem('feedItems');
     localStorage.removeItem('customPlaylists');
-    console.log('Feed and playlists reset to initial data');
+    localStorage.removeItem('profileData');
+    localStorage.removeItem('interestedItems');
   };
 
   const contextValue = {
@@ -147,6 +275,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addToPlaylist,
     removeFromPlaylist,
     deletePlaylist,
+    profileData,
+    updateProfileData,
+    updateProfilePhoto,
+    updateAvatarPhoto,
+    updateBannerPhoto,
+    updateBlurb,
+    removeBlurb,
+    addBlurb,
+    updateStats,
   };
 
   return (
