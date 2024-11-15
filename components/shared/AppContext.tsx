@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { FeedItem } from "@/lib/types";
+import { FeedItem, CustomPlaylist } from "@/lib/types";
 import { feedItems as initialFeedItems } from "@/lib/mock-data";
 
 interface AppContextType {
@@ -11,7 +11,12 @@ interface AppContextType {
   feedItems: FeedItem[];
   addFeedItem: (item: Omit<FeedItem, 'id'>) => void;
   deleteFeedItem: (itemId: number) => void;
-  resetToInitialFeed: () => void;  // New function
+  resetToInitialFeed: () => void;
+  customPlaylists: CustomPlaylist[];
+  addCustomPlaylist: (playlist: Omit<CustomPlaylist, 'id'>) => void;
+  addToPlaylist: (playlistId: number, item: FeedItem) => void;
+  removeFromPlaylist: (playlistId: number, itemId: number) => void;
+  deletePlaylist: (playlistId: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -30,10 +35,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [feedItems, setFeedItems] = useState<FeedItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('feedItems');
-      // Only use saved items if they exist AND array is not empty
       return saved && JSON.parse(saved).length > 0 ? JSON.parse(saved) : initialFeedItems;
     }
     return initialFeedItems;
+  });
+
+  // Initialize custom playlists
+  const [customPlaylists, setCustomPlaylists] = useState<CustomPlaylist[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('customPlaylists');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
 
   // Save to localStorage whenever items change
@@ -41,8 +54,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('interestedItems', JSON.stringify(interestedItems));
       localStorage.setItem('feedItems', JSON.stringify(feedItems));
+      localStorage.setItem('customPlaylists', JSON.stringify(customPlaylists));
     }
-  }, [interestedItems, feedItems]);
+  }, [interestedItems, feedItems, customPlaylists]);
 
   const addInterestedItem = (item: FeedItem) => {
     setInterestedItems((prev) => {
@@ -73,13 +87,51 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const deleteFeedItem = (itemId: number) => {
     setFeedItems((prev) => prev.filter(item => item.id !== itemId));
     setInterestedItems((prev) => prev.filter(item => item.id !== itemId));
+    // Also remove from any playlists
+    setCustomPlaylists(prev => 
+      prev.map(playlist => ({
+        ...playlist,
+        items: playlist.items.filter(item => item.id !== itemId)
+      }))
+    );
   };
 
-  // New function to reset feed to initial mock data
+  // Playlist functions
+  const addCustomPlaylist = (playlist: Omit<CustomPlaylist, 'id'>) => {
+    setCustomPlaylists(prev => [...prev, { ...playlist, id: Date.now() }]);
+  };
+
+  const addToPlaylist = (playlistId: number, item: FeedItem) => {
+    setCustomPlaylists(prev => 
+      prev.map(playlist => 
+        playlist.id === playlistId
+          ? { ...playlist, items: [...playlist.items, item] }
+          : playlist
+      )
+    );
+  };
+
+  const removeFromPlaylist = (playlistId: number, itemId: number) => {
+    setCustomPlaylists(prev => 
+      prev.map(playlist => 
+        playlist.id === playlistId
+          ? { ...playlist, items: playlist.items.filter(item => item.id !== itemId) }
+          : playlist
+      )
+    );
+  };
+
+  const deletePlaylist = (playlistId: number) => {
+    setCustomPlaylists(prev => prev.filter(playlist => playlist.id !== playlistId));
+  };
+
+  // Reset should now also clear custom playlists
   const resetToInitialFeed = () => {
     setFeedItems(initialFeedItems);
-    localStorage.removeItem('feedItems'); // Clear localStorage
-    console.log('Feed reset to initial data');
+    setCustomPlaylists([]);
+    localStorage.removeItem('feedItems');
+    localStorage.removeItem('customPlaylists');
+    console.log('Feed and playlists reset to initial data');
   };
 
   const contextValue = {
@@ -89,7 +141,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     feedItems,
     addFeedItem,
     deleteFeedItem,
-    resetToInitialFeed,  // Add to context value
+    resetToInitialFeed,
+    customPlaylists,
+    addCustomPlaylist,
+    addToPlaylist,
+    removeFromPlaylist,
+    deletePlaylist,
   };
 
   return (
